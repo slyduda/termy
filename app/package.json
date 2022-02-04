@@ -1,5 +1,5 @@
 {
-  "name": "app",
+  "name": "termy",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -11,7 +11,6 @@
     "@tailwindcss/postcss7-compat": "^2.2.17",
     "autoprefixer": "^9",
     "core-js": "^3.6.5",
-    "nightwind": "^1.1.12",
     "postcss": "^7",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.17",
     "vue": "^3.0.0",
@@ -40,10 +39,5 @@
       "parser": "babel-eslint"
     },
     "rules": {}
-  },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not dead"
-  ]
+  }
 }
