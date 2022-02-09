@@ -1,5 +1,8 @@
 import { createStore } from "vuex" 
 import { LIST5, LIST6 } from "../constants"
+import storage from "./storage/index.js"
+import settings from "./settings/index.js"
+import admin from "./admin/index.js"
 
 
 const ALPHABET = [
@@ -74,130 +77,220 @@ function checkGuesses( guess , solution ) {
 
 
 const store = createStore({
+    modules: {
+        storage,
+        settings,
+        admin
+    },
    state:{
-        terms: {
-            classic: "ORGAN",
-            plus: "PILLOW"
+        id: null,
+        words: {
+            5: "ORGAN",
+            6: "PILLOW"
         },
+        length: 5,
         solution: "ORGAN",
         guesses: [],
-        length: 5,
         tries: 6,
+        
         current: '',
-        celebrated: false,
+        ended: false,
+        
         startTime: null,
         endTime: null,
-        modesTimeChallenge: false,
         time: 60000,
-        alert: ""
+
+        dailyReset: new Date(0),
+        
+        playing: true
    },
    actions: {
+        load(context, payload) {
+            if (payload.id === "{@ game_id @}") payload.id = 4
+            if (payload[5] === "{@ five @}") payload[5] = "ZEBRA"
+            if (payload[6] === "{@ six @}") payload[6] = "ZIPPER"
+            if (payload.p === "{@ payload @}") payload.p = 24 * 60 * 60
+            
+            context.dispatch('storage/load')
+            context.dispatch('storage/visit', payload.id)
+            context.commit('load', payload)
+            context.commit('set', 5)
+        },
+
         switchMode(context) {
-            context.dispatch('refreshState')
-            context.commit('plusMode')
-        }, 
-        refreshState(context) {
-            context.commit('refreshState')  
+            // Used to switch modes between Termy and Termy+
+            const inProgress = context.state.current.length > 0 || context.state.guesses.length > 0
+            if ( !context.state.ended && inProgress ) return
+            context.commit('set', context.state.length === 5 ? 6 : 5)
         },
-        setState(context, payload) {
-            context.commit('setState', payload)
+
+        reset(context) {
+            context.commit('reset')  
         },
-        timeChallenge(context) {
-            context.commit('timeChallenge')
-        },
-        plusMode(context) {
-            if (context.state.current.length > 0 || context.state.guesses.length > 0) return
-            context.commit('plusMode')
-        },
-        alert(context, payload) {
-            context.commit('alert', payload)
-        },
+        
         submit (context) {
             if (context.state.length === 5) {
                 if ( LIST5.indexOf(context.state.current.toLowerCase()) < 0 ) {
-                    context.commit('alert', 'Not valid')
+                    context.commit('admin/alert', 'Not valid')
                     return
                 }
-                
-                context.commit('submit')
             } else {
                 if ( LIST6.indexOf(context.state.current.toUpperCase()) < 0 ) {
-                    context.commit('alert', 'Not valid')
+                    context.commit('admin/alert', 'Not valid')
                     return
                 }
-                context.commit('submit')
             }
-            if (context.getters.won && !context.state.celebrated) context.commit('celebrate')
+            if (context.state.guesses.length === 0) context.commit('start')
+            context.commit('submit')
+            if ( context.getters.won ) {
+                context.dispatch('admin/alert', "You won!")
+                context.commit('end')
+            }
+            if ( context.state.tries === context.state.guesses.length ) {
+                if ( context.state.tries >= 10 ) { 
+                    context.dispatch('fail') 
+                } else { 
+                    context.dispatch('admin/alert', "UH OH")
+                    context.commit('playing', false) 
+                }
+            }
         },
-        addLetter (context, payload) {
-            if (context.state.current.length >= context.state.length) return
+
+        continue(context, payload) {
+            context.commit('addTries', payload)
+        },
+
+        addLetter(context, payload) {
+            if (context.state.current.length >= context.state.length ) return
+            if (context.getters.won) return
             context.commit('addLetter', payload)
         },
         removeLetter (context) {
             context.commit('removeLetter')
         },
         fail (context) {
-            context.commit('celebrate')
+            context.dispatch('admin/alert', context.state.solution)
+            context.commit('end')
         }
    },
    mutations: {
-        refreshState(state) {
-            if (state.length === 5) state.solution = state.terms.classic
-            if (state.length === 6) state.solution = state.terms.plus 
+        load(state, payload) {
+            state.id = payload.id
+            
+            const d = new Date()
+            d.setSeconds( d.getSeconds() + payload.p )
+            state.dailyReset = d
+
+            console.log(payload[5])
+
+            state.words[5] = payload[5]
+            state.words[6] = payload[6]
+        },
+        
+
+        set(state, payload) {
+            state.length = payload
+            state.solution = state.words[state.length]
+
             state.guesses = []
-            state.celebrated = false
+            state.ended = false
             state.startTime = null
             state.endTime = null
-        },
-        setState(state, payload) {
-            state.terms = {
-                classic: payload.five,
-                plus: payload.six
-            }
-            console.log(state.terms.classic)
-            console.log(state.terms.plus)
-        },
-        alert(state, payload) {
-            state.alert = payload
-            setTimeout(() => {
-                state.alert = ""
-            } , 5000)
-        },
-        timeChallenge(state) {
-            state.modeTimeChallenge = !state.modeTimeChallenge
-        },
-        plusMode(state) {
-            if (state.length === 5) {
-                state.solution = state.terms.plus
-                state.length = 6
-            } else {
-                state.solution = state.terms.classic
-                state.length = 5
+            state.playing = true
+            state.tries = 6
+
+            // We add game id before load mutate sp just need to see if the user played played
+            const game = state.storage.games[state.id]
+            if (game[state.length] !== undefined) {
+                const mode = game[state.length]
+                state.guesses = mode.guesses
+                if (mode.won === null) {
+                    if ( state.guesses.length >= 6 ) state.tries = 10
+                    if ( state.tries === state.guesses.length ) state.playing = false
+                } else {
+                    console.log(game)
+                    state.ended = true
+                }
             }
         },
+
+        reset(state) { // Might be beneficial to change this function since this implies the game is being reset and not the mode
+            state.solution = state.words[state.length] 
+            
+            state.guesses = []
+            state.ended = false
+            state.startTime = null
+            state.endTime = null
+            state.playing = true
+            state.tries = 6
+
+            // We add game id before load mutate sp just need to see if the user played played
+            const game = state.storage.games[state.id]
+            if (game[state.length] !== undefined) state.guesses = game[state.length].guesses
+        },
+
+
         submit (state) {
-            if (state.guesses.length === 0) {
-                const d = new Date()
-                state.startTime = d.getTime();
-            }
             state.guesses.push(state.current)
             state.current = ''
+
+            const games = JSON.parse(localStorage.games)
+            games[state.id][state.length].guesses = state.guesses
+            localStorage.games = JSON.stringify(games)
         },
-        celebrate(state) {
-            if (state.modesTimeChallenge) {
-                state.endTime = state.startTime + state.time
-            } else {
-                const d = new Date()
-                state.endTime = d.getTime();
-            }
-            state.celebrated = true
+
+        addTries(state, payload) {
+            state.tries = state.tries + payload
         },
+        
         addLetter(state, payload) {
             state.current += payload
         },
         removeLetter(state) {
             state.current = state.current.slice(0, -1)
-        }
+        },
+
+        start(state) {
+            const d = new Date()
+            state.startTime = d.getTime();
+
+            const store = JSON.parse(localStorage.games)
+            
+            store[state.id][state.length] = {
+                startedOn: state.startTime,
+                endedOn: null,
+                mode: null,
+                guesses: [],
+                length: state.length,
+                solution: state.solution,
+                badges: [],
+                challenges: [],
+                won: null
+            } 
+
+            localStorage.games = JSON.stringify(store)
+        },
+
+        playing(state, payload) {
+            state.playing = payload
+        },
+
+        end(state) {
+            console.log('end')
+            if (state.settings.timeChallenge) {
+                state.endTime = state.startTime + state.time
+            } else {
+                const d = new Date()
+                state.endTime = d.getTime();
+            }
+            
+            const store = JSON.parse(localStorage.games)
+            store[state.id][state.length].endedOn = state.endTime
+            store[state.id][state.length].won = state.guesses[state.guesses.length - 1] === state.solution
+
+            localStorage.games = JSON.stringify(store)
+            state.ended = true
+        },
    },
    getters: {
     guessResults: state => {
@@ -210,6 +303,15 @@ const store = createStore({
             results.push(guessResult)
         }
         return results // [ [ [a , 2], [b, 0], [c, 1] ], [ [a , 2], [c, 2], [d, 2] ] ]
+    },
+    hints: (state, getters) => {
+        const arr = new Array(state.length).fill('')
+        if (!state.settings.letterHelper || getters.won) return arr
+        for (let i = 0; i < getters.guessResults.length; i++ ) {
+            const guess = getters.guessResults[i]
+            for (let j = 0; j < guess.length; j++) if ( guess[j][1] === 2 ) arr[j] = guess[j][0]
+        }
+        return arr
     },
     charStatuses: (state, getters) => {
         return Object.fromEntries(ALPHABET.map(k => [k, getters.correctChars.includes(k) ? 'correct' :   getters.presentChars.includes(k) ? 'present' :  getters.absentChars.includes(k) ? 'absent' : '' ] ))
@@ -248,8 +350,10 @@ const store = createStore({
         return unique(correct) 
     },
     won: (state) => {
-        if (state.guesses[state.guesses.length - 1] === state.solution) return true
-        return false
+        return state.guesses[state.guesses.length - 1] === state.solution
+    },
+    lost: (state, getters) => {
+        return state.guesses.length >= 6 && !getters.won
     }
   }
 })

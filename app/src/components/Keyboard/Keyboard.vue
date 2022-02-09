@@ -1,5 +1,5 @@
 <template>
-    <div class="flex flex-col pb-2 px-2">
+    <div id="keyboard" class="flex flex-col pb-2 px-2">
         <div class="flex justify-center mb-1">
             <Key :value="'Q'" @click="nothing" :status="charStatuses['Q']" />
             <Key :value="'W'" @click="nothing" :status="charStatuses['W']" />

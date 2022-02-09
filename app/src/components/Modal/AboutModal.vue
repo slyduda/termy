@@ -9,6 +9,30 @@
             </div>
             <div class="border-b border-solid border-gray-300 dark:border-gray-700 py-4 text-left">
                 <h5 class="">Examples</h5>
+                <div class="inline-flex my-2">
+                    <Cell :status="2" :value="'T'" class="w-12 h-12" />
+                    <Cell :status="''" :value="'I'" class="w-12 h-12" />
+                    <Cell :status="''" :value="'M'" class="w-12 h-12" />
+                    <Cell :status="''" :value="'E'" class="w-12 h-12" />
+                    <Cell :status="''" :value="'S'" class="w-12 h-12" />
+                </div>
+                <p class="mb-2">The letter T is in the word and in the correct spot.</p>
+                <div class="inline-flex my-2">
+                    <Cell :status="''" :value="'B'" class="w-12 h-12" />
+                    <Cell :status="1" :value="'U'" class="w-12 h-12" />
+                    <Cell :status="''" :value="'S'" class="w-12 h-12" />
+                    <Cell :status="''" :value="'T'" class="w-12 h-12" />
+                    <Cell :status="''" :value="'S'" class="w-12 h-12" />
+                </div>
+                <p class="mb-2">The letter U is in the word but in the wrong spot.</p>
+                <div class="inline-flex my-2">
+                    <Cell :status="''" :value="'U'" class="w-12 h-12" />
+                    <Cell :status="''" :value="'N'" class="w-12 h-12" />
+                    <Cell :status="0" :value="'I'" class="w-12 h-12" />
+                    <Cell :status="''" :value="'O'" class="w-12 h-12" />
+                    <Cell :status="''" :value="'N'" class="w-12 h-12" />
+                </div>
+                <p class="mb-2">The letter I is not in the word.</p>
             </div>
             <div class="py-4 text-left">
                 <h5 class="">A new Termy will be available each day! Check back for more challenges and modes.</h5>
@@ -23,7 +47,12 @@
 </template>
 
 <script>
+import Cell from '../Grid/Cell.vue';
+
 export default {
+    components: {
+        Cell
+    },
     props: {
         visible: {
             type: Boolean,

@@ -1,13 +1,14 @@
 <template>
-  <div class="w-full h-full flex-col items-stretch bg-gray-50 dark:bg-gray-900 ">
+  <div class="w-full h-full flex flex-col items-stretch bg-gray-50 dark:bg-gray-900 ">
 
     <AboutModal @toggle="about = !about" :visible="about"/>
     <SettingModal @toggle="setting = !setting" :visible="setting"/>
     <ScoreModal @toggle="score = !score" :visible="score"/>
+    <ContinueModal :visible="!playing" />
     <div class="w-full absolute mt-3 flex justify-center">
       <Alert :message="alert"/>
     </div>
-    <div class="py-2 max-w-7xl mx-auto border-b border-solid border-gray-300 dark:border-gray-700">
+    <div id="header" class="w-full py-2 max-w-7xl mx-auto border-b border-solid border-gray-300 dark:border-gray-700">
         <div class="w-full max-w-lg flex justify-center mx-auto items-center relative">
             <div class="left-2 absolute flex">
                 <button @click="about = !about">
@@ -15,14 +16,14 @@
                         <path class="fill-gray-900 dark:fill-white" d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"></path>
                     </svg>
                 </button>
-                <div v-if="timeChallengeMode" class="ml-4 text-gray-400 dark:text-gray-600 font-bold">{{ niceTimeRemaining }}</div>
+                <div v-if="timeChallenge" class="ml-4 text-gray-400 dark:text-gray-600 font-bold">{{ fancyTmeRemaining }}</div>
             </div>
             <div class="relative">
-              <button v-if="!plusMode" @click="$store.dispatch('plusMode')" class="text-4xl grow font-bold dark:text-white">
-                <h1>TERMY</h1>
+              <button v-if="length === 5" @click="$store.dispatch('switchMode')" class="text-4xl grow font-bold dark:text-white">
+                <h1 class="tracking-widest">TERMY</h1>
               </button>
-              <button v-else @click="$store.dispatch('plusMode')" class="text-4xl grow font-bold dark:text-white flex">
-                <h1>TERMY</h1>
+              <button v-else @click="$store.dispatch('switchMode')" class="text-4xl grow font-bold dark:text-white flex">
+                <h1 class="tracking-widest">TERMY</h1>
                 <strong class="text-blue-500 font-black">+</strong>  
               </button>
               <p class="absolute text-xs -right-8 bottom-0 text-gray-400 dark:text-gray-600 font-bold">BETA</p>
@@ -44,11 +45,11 @@
     </div>
     <div v-if="timeRemaining" class="overflow-hidden">
       <div class="max-w-7xl border-b-4 border-solid border-blue-500 overflow-hidden" 
-        :style="{width: `${100 - (percentTimeRemaining*100) }%` }">
+        :style="{width: `${100 - (percentRemaining*100) }%` }">
       </div>
     </div>
-    <Grid class="flex-shrink flex-grow flex-1"/>
-    <Keyboard class="flex-grow-0"/>
+    <Grid class="flex-shrink flex-grow"/>
+    <Keyboard />
   </div>
 </template>
 
@@ -56,6 +57,7 @@
 import Alert from './components/base/Alert.vue'
 import ScoreModal from './components/Modal/ScoreModal.vue'
 import SettingModal from './components/Modal/SettingModal.vue'
+import ContinueModal from './components/Modal/ContinueModal.vue'
 import AboutModal from './components/Modal/AboutModal.vue'
 import Grid from './components/Grid/Grid.vue'
 import Keyboard from './components/Keyboard/Keyboard.vue'
@@ -116,7 +118,8 @@ export default {
     AboutModal,
     SettingModal,
     ScoreModal,
-    Alert
+    Alert,
+    ContinueModal
   },
   data() {
     return {
@@ -127,48 +130,48 @@ export default {
     }
   },
   computed: {
-    plusMode() {
-      return this.$store.state.length === 6
+    length() {
+      return this.$store.state.length
     },
-    celebrate() {
-        return this.$store.state.celebrated
-    },
-    startTime() {
-      return this.$store.state.startTime
-    },
-    timeChallengeMode() {
-      return this.$store.state.modeTimeChallenge
+    alert() {
+      return this.$store.state.admin.alert
     },
     time() {
       return this.$store.state.time
     },
+    startTime() {
+      return this.$store.state.startTime
+    },
     endTime() {
       return this.startTime + this.time
     },
-    percentTimeRemaining() {
+    timeChallenge() {
+      return this.$store.state.settings.timeChallenge
+    },
+    end() {
+        return this.$store.state.ended
+    },
+    playing() {
+        return this.$store.state.playing
+    },
+    percentRemaining() {
       if (this.timeRemaining) return this.timeRemaining/this.time
       return null
     },
-    niceTimeRemaining() {
+    fancyTmeRemaining() {
       if (!this.timeRemaining) return
       return fancyTimeFormat(this.timeRemaining/1000 + 1)
     },
-    alert() {
-      return this.$store.state.alert
-    }
   },
   methods: {
     keyDown: function (event) {
-
-      console.log(event.key)
-      if (ALPHABET.indexOf(event.key.toUpperCase()) >= 0) {
-        this.$store.dispatch('addLetter', event.key.toUpperCase())
-      } else if (event.key === 'Enter') {
+      if (event.key === 'Enter') {
         this.$store.dispatch('submit')
       } else if (event.key === 'Backspace') {
         this.$store.dispatch('removeLetter')
+      }  else if (ALPHABET.indexOf(event.key.toUpperCase()) >= 0) {
+        this.$store.dispatch('addLetter', event.key.toUpperCase())
       }  
-
     },
     startTimer() {
       const d = new Date()
@@ -187,14 +190,20 @@ export default {
     window.addEventListener('keydown', this.keyDown)
     const five = document.getElementById('f_elem').value
     const six = document.getElementById('s_elem').value
-    const payload = document.getElementById('p_elem').value
-    const p = {
-      five,
-      six,
-      payload 
+    const p = document.getElementById('p_elem').value
+    const id = document.getElementById('i_elem').value
+    
+    const payload = {
+      p,
+      id,
+      5: five,
+      6: six
     }
-    this.$store.dispatch('setState', p)
-    this.$store.dispatch('refreshState')
+
+    this.$store.dispatch('load', payload)
+
+    if (!localStorage.instructions) this.about = true
+    localStorage.instructions = true
   },
 
   unmounted: function () {
@@ -202,13 +211,13 @@ export default {
   },
 
   watch: {
-    celebrate() {
-      if (this.celebrate === true) {
+    end() {
+      if (this.end === true) {
         this.score = true
       }
     },
     startTime() {
-      if (!this.timeRemaining && this.timeChallengeMode) this.startTimer()
+      if (!this.timeRemaining && this.timeChallenge) this.startTimer()
     }
   }
 }
@@ -223,5 +232,10 @@ export default {
   color: #2c3e50;
   width: 100%;
   height: 100%;
+}
+
+* {
+  margin: 0;
+  padding: 0;
 }
 </style>

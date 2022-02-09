@@ -1,6 +1,6 @@
 <template>
-    <div class="flex justify-center mb-1" :guess="guess">
-        <Cell v-for="char in convertedGuess" :key="char" :value="char[0]" :status="char[1]"/>
+    <div class="flex flex-1 justify-center mb-1 last:mb-0" :guess="guess">
+        <Cell v-for="(char, index) in convertedGuess" :small="small" :key="char" :value="char[0]" :status="char[1]" :hint="hints[index]"/>
     </div>
 </template>
 
@@ -15,6 +15,16 @@ export default {
         value: {
             type: [Array, String],
             default: ''
+        },
+        hints: {
+            type: Array,
+            default: function() {
+                return []
+            }
+        },
+        small: {
+            type: Boolean,
+            default: false
         }
     },
     computed: {

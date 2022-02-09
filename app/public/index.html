@@ -27,10 +27,17 @@
     <meta name="twitter:description" content="Termy is a fun and exciting game that allows you to guess a new word each day." />
     <meta name="twitter:title" content="Termy - A Word Guessing Game" />
     <meta name="twitter:site" content="@termygg" />
-    <meta name="twitter:image" content="/static/twitter-banner.png" />
+    <meta name="twitter:image" content="https://termy.gg/static/twitter-banner.png" />
     <meta name="twitter:creator" content="@slyduda" />
 
+    <meta property="og:title" content="Termy - A Word Guessing Game"/>
+    <meta property="og:description" content="Termy is a fun and exciting game that allows you to guess a new word each day."/>
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://termy.gg/" />
+    <meta property="og:image" content="https://termy.gg/static/og-banner.png" />
+
     <title>Termy</title>
+    <meta name="description" content="Termy is a fun and exciting word guessing game built open source and free for everyone to use without a paywall or ads." />
     <script>
       // On page load or when changing themes, best to add inline in `head` to avoid FOUC
       if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -50,9 +57,10 @@
     </script>
   </head>
   <body style="width: 100%; height: 100%; ">
-    <input id="f_elem" name="payload" type="hidden" class="hidden" value="{% five %}" />
-    <input id="s_elem" name="payload" type="hidden" class="hidden" value="{% six %}" />
-    <input id="p_elem" name="payload" type="hidden" class="hidden" value="{% payload %}" />
+    <input id="i_elem" name="payload" type="hidden" class="hidden" value="{@ game_id @}" />
+    <input id="f_elem" name="payload" type="hidden" class="hidden" value="{@ five @}" />
+    <input id="s_elem" name="payload" type="hidden" class="hidden" value="{@ six @}" />
+    <input id="p_elem" name="payload" type="hidden" class="hidden" value="{@ payload @}" />
     <noscript>
       <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
     </noscript>

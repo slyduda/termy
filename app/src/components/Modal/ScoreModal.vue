@@ -7,7 +7,7 @@
             <h4 class="text-lg font-semibold mb-2 text-left">STATISTICS</h4>
             <div class="flex mb-4">
                 <div class="flex flex-col flex-1">
-                    <p class="text-4xl">{{ playedCount }}</p>
+                    <p class="text-4xl">{{ gamesPlayed }}</p>
                     <h5 class="text-xs">Played</h5>
                 </div>
                 <div class="flex flex-col flex-1">
@@ -24,38 +24,26 @@
                 </div>
             </div>
             <h4 class="text-lg font-semibold mb-2 text-left">DISTRIBUTION</h4>
-            <div class="mb-4">
-                <div class="flex w-full">
-                    <h5 class="w-6">1</h5>
-                    <p>{{ guessCounts[1] }}</p>
-                </div>
-                <div class="flex w-full">
-                    <h5 class="w-6">2</h5>
-                    <p>{{ guessCounts[2] }}</p>
-                </div>
-                <div class="flex w-full">
-                    <h5 class="w-6">3</h5>
-                    <p>{{ guessCounts[3] }}</p>
-                </div>
-                <div class="flex w-full">
-                    <h5 class="w-6">4</h5>
-                    <p>{{ guessCounts[4] }}</p>
-                </div>
-                <div class="flex w-full">
-                    <h5 class="w-6">5</h5>
-                    <p>{{ guessCounts[5] }}</p>
-                </div>
-                <div class="flex w-full">
-                    <h5 class="w-6">6</h5>
-                    <p>{{ guessCounts[6] }}</p>
+            <div class="mb-4 flex flex-col">
+                <div v-for="index in Object.entries(distribution)" :key="index[0]" class="flex-1 flex w-full pb-0.5">
+                    <h5 class="w-6 flex-shrink-0">{{ index[0] }}</h5>
+                    <Bar :percent="index[1]/distribution[mode]*100" :value="index[1]"/>
                 </div>
             </div>
-            <h4 class="text-lg font-semibold mb-2 text-left">RESULTS</h4>
-            <div class="mb-4">
+            <div v-if="startTime" class="mb-4">
+                <h4 class="text-lg font-semibold mb-2 text-left">RESULTS</h4>
                 <div class="flex w-full justify-between">
                     <h5 class="">Time {{ endTime ? 'Taken' : 'Current'}}</h5>
                     <p v-if="endTime" class="text-lg font-bold">{{ totalTime }}</p>
                     <p v-else class="text-lg font-bold">{{ time }}</p>
+                </div>
+            </div>
+            <div v-if="won">
+                <h4 class="text-lg font-semibold mb-2 text-left">NEXT TERMY</h4>
+                <div class="mb-4">
+                    <div class="flex w-full justify-between">
+                        <h5 class="text-2xl">{{ timeLeftPretty }}</h5>
+                    </div>
                 </div>
             </div>
             <div v-if="won" class="flex">
@@ -78,6 +66,7 @@
 </template>
 
 <script>
+import Bar from '../Stats/Bar.vue'
 import BaseCheckbox from '../base/Checkbox.vue'
 
 function fallbackCopyTextToClipboard(text) {
@@ -139,7 +128,8 @@ function fancyTimeFormat(duration)
 export default {
     name: 'ScoreModal',
     components: {
-        BaseCheckbox
+        BaseCheckbox,
+        Bar
     },
     computed: {
         length() {
@@ -148,8 +138,15 @@ export default {
         guessResults() {
             return this.$store.getters.guessResults
         },
+        games() {
+            return this.$store.state.storage.games
+        },
+        gamesPlayed() {
+            return Object.values(this.games).filter((game) => game[this.length] !== undefined).length
+        },
         winPercentage() {
-            return 0
+            const gamesWon = Object.values(this.games).filter((game) => game[this.length] !== undefined).filter((game) => game[this.length].won === true).length
+            return gamesWon/this.gamesPlayed * 100
         },
         playedCount() {
             return 0
@@ -160,8 +157,9 @@ export default {
         maxStreak() {
             return 0
         },
-        guessCounts() {
-            return {
+        distribution() {
+            const games = Object.values(this.games).filter((game) => game[this.length] !== undefined).filter((game) => game[this.length].won === true)
+            const dist = {
                 1: 0,
                 2: 0,
                 3: 0,
@@ -169,6 +167,17 @@ export default {
                 5: 0,
                 6: 0
             }
+            games.forEach((game) => {
+                dist[game[this.length].guesses.length] += 1
+            });
+            return dist
+        },
+        mode() {
+            let i = 0
+            Object.values(this.distribution).forEach((dist, index) => {
+                if (dist > this.distribution[i + 1]) i = index 
+            }) 
+            return i + 1
         },
         time() {
             return fancyTimeFormat()
@@ -177,7 +186,7 @@ export default {
             return 0
         },
         won() {
-            return this.$store.state.celebrated
+            return this.$store.getters.won
         },
         endTime() {
             return this.$store.state.endTime
@@ -190,6 +199,12 @@ export default {
         },
         plus() {
             return this.length === 6 ? "+" : ""
+        },
+        dailyReset() {
+            return this.$store.state.dailyReset
+        },
+        timeLeftPretty() {
+            return fancyTimeFormat(this.timeLeft)
         }
     },
     props: {
@@ -202,6 +217,7 @@ export default {
         return {
             link: false,
             shared: false,
+            timeLeft: 0,
         }
     },
     methods: {
@@ -209,7 +225,7 @@ export default {
             this.$emit('toggle')
         },
         generateEmojiGrid() {
-            let TEXT = "Termy" + this.plus + " #" + this.termyNumber + ' ' + this.guessResults.length + '/6\n\n'
+            let TEXT = "Termy" + this.plus + " " + this.termyNumber + ' ' + this.guessResults.length + '/6\n\n'
             for (let i = 0; i < this.guessResults.length; i++) {
                 const guessResult = this.guessResults[i]
                 for (let j = 0; j < guessResult.length; j++) {
@@ -232,13 +248,24 @@ export default {
         copyScore() {
             copyTextToClipboard(this.generateEmojiGrid())
 
-            this.$store.dispatch('alert', 'Copied to Clipboard')
+            this.$store.dispatch('admin/alert', 'Copied to Clipboard')
             this.shared = true
         },
         switchMode() {
            this.$store.dispatch('switchMode') 
+        },
+        updateDailyDelta() {
+            this.timeLeft = this.timeLeft - 1
+            setTimeout( this.updateDailyDelta, 1000)
         }
     },
+    watch: {
+        dailyReset() {
+            const d = new Date()
+            this.timeLeft = (this.dailyReset.getTime()/1000) - (d.getTime()/1000)
+            this.updateDailyDelta()
+        }
+    }
 }
 </script>
 
