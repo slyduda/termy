@@ -1,15 +1,21 @@
+import { v4 as uuidv4 } from 'uuid';
+
 export default {
     name: 'storage',
     namespaced: true,
     state:{
-        games: null    
+        games: null,
+        session: null,
     },
     actions: {
         load(context) {
             let games = {}
+            let session = uuidv4()
             if (localStorage.games) games = JSON.parse(localStorage.games)
-            context.commit('load', games)
+            if (localStorage.session) session = localStorage.session
+            context.commit('load', {games, session})
             localStorage.games = JSON.stringify(games)
+            localStorage.session = session
         },
         visit(context, payload) {
             context.commit('addGame', payload)
@@ -19,7 +25,8 @@ export default {
     },
     mutations: {
         load(state, payload) {
-            state.games = payload
+            state.games = payload.games
+            state.session = payload.session
         },
         addGame(state, payload) {
             if (state.games[payload] === undefined) state.games[payload] = {}

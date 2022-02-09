@@ -1,2 +1,3 @@
 words.txt
-database.sql
+database.sqlite
+cron.txt

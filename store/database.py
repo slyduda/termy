@@ -14,9 +14,10 @@ class Game(db.Entity):
     '''
     _table_ = 'games'
     id = PrimaryKey(uuid.UUID, default=uuid.uuid4)
+    puzzle = Required(int)
     session = Required(uuid.UUID)
 
-    guesses = Required(str)
+    guesses = Required(str, max_len=100)
     started_on = Required(datetime)
     ended_on = Required(datetime)
     length = Required(int)

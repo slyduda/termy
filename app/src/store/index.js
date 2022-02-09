@@ -3,7 +3,7 @@ import { LIST5, LIST6 } from "../constants"
 import storage from "./storage/index.js"
 import settings from "./settings/index.js"
 import admin from "./admin/index.js"
-
+import axios from 'axios'
 
 const ALPHABET = [
     'Q',
@@ -102,7 +102,8 @@ const store = createStore({
 
         dailyReset: new Date(0),
         
-        playing: true
+        playing: true,
+        submitted: false,
    },
    actions: {
         load(context, payload) {
@@ -145,8 +146,8 @@ const store = createStore({
             if ( context.getters.won ) {
                 context.dispatch('admin/alert', "You won!")
                 context.commit('end')
-            }
-            if ( context.state.tries === context.state.guesses.length ) {
+                context.dispatch('storage/load')
+            } else if ( context.state.tries === context.state.guesses.length ) {
                 if ( context.state.tries >= 10 ) { 
                     context.dispatch('fail') 
                 } else { 
@@ -171,14 +172,15 @@ const store = createStore({
         fail (context) {
             context.dispatch('admin/alert', context.state.solution)
             context.commit('end')
+            context.dispatch('storage/load')
         }
    },
    mutations: {
         load(state, payload) {
-            state.id = payload.id
+            state.id = Number(payload.id)
             
             const d = new Date()
-            d.setSeconds( d.getSeconds() + payload.p )
+            d.setSeconds( d.getSeconds() + Number(payload.p) )
             state.dailyReset = d
 
             console.log(payload[5])
@@ -198,12 +200,15 @@ const store = createStore({
             state.endTime = null
             state.playing = true
             state.tries = 6
+            state.submitted = false
 
             // We add game id before load mutate sp just need to see if the user played played
             const game = state.storage.games[state.id]
             if (game[state.length] !== undefined) {
                 const mode = game[state.length]
                 state.guesses = mode.guesses
+                if ( mode.startedOn ) state.startTime = new Date( mode.startedOn )
+                if ( mode.endedOn ) state.endTime = new Date( mode.endedOn )
                 if (mode.won === null) {
                     if ( state.guesses.length >= 6 ) state.tries = 10
                     if ( state.tries === state.guesses.length ) state.playing = false
@@ -223,6 +228,7 @@ const store = createStore({
             state.endTime = null
             state.playing = true
             state.tries = 6
+            state.submitted = false
 
             // We add game id before load mutate sp just need to see if the user played played
             const game = state.storage.games[state.id]
@@ -265,7 +271,9 @@ const store = createStore({
                 solution: state.solution,
                 badges: [],
                 challenges: [],
-                won: null
+                won: null,
+                session: state.storage.session,
+                version: '1.0'
             } 
 
             localStorage.games = JSON.stringify(store)
@@ -290,6 +298,33 @@ const store = createStore({
 
             localStorage.games = JSON.stringify(store)
             state.ended = true
+
+            const game = store[state.id][state.length]
+            const payload = {
+                id: state.id,
+                solution: state.solution,
+                session: game.session,
+                guesses: game.guesses.join(','),
+                startedOn: game.startedOn,
+                endedOn: game.endedOn,
+                length: game.length,
+                mode: game.length === 5 ? 'classic' : 'plus',
+                won: game.won
+            }
+
+            axios.post('http://192.168.1.4:5000/submit', payload)
+                .then((response) => {
+                    state.submitted = true
+                    
+                    store[state.id][state.length].id = response.data.id
+                    store[state.id][state.length].hash = response.data.hash
+                    store[state.id][state.length].hashVersion = response.data.hash_version
+
+                    localStorage.games = JSON.stringify(store)
+                })
+                .catch((error) => {
+                    console.log(error)
+                })
         },
    },
    getters: {

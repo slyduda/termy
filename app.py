@@ -1,5 +1,8 @@
 import os
 import asyncio
+import hashlib
+import json
+import uuid
 from datetime import timedelta, datetime, date
 # import aioschedule as schedule
 
@@ -45,7 +48,7 @@ if app.config['TYPE'] == 'local':
                allow_headers=["content-type", "x-csrf-token"],
                allow_credentials=True,
                allow_methods=["POST", "PUT", "DELETE", "GET"],
-               allow_origin=["http://localhost:3000", "http://localhost:4000"]
+               allow_origin=["http://192.168.1.4:5000"]
                )
 
 if app.config['TYPE'] == 'prod':
@@ -56,6 +59,7 @@ if app.config['TYPE'] == 'prod':
                allow_origin=["https://termy.gg"]
                )
 
+dir_path = os.path.dirname(os.path.realpath(__file__))
 
 db.bind('sqlite', filename='database.sqlite', create_db=True)
 db.generate_mapping(create_tables=True)
@@ -88,26 +92,63 @@ async def catch_all():
     return await render_template("index.html", five=WORDS['classic'], six=WORDS['plus'], game_id=ID, payload=delta)
 
 
-@app.route('/submit')
+async def hash_game(game):
+    g = game.to_dict()
+    g['id'] = str(g['id'])
+    g['session'] = str(g['session'])
+    g['ended_on'] = str(g['ended_on'])
+    g['started_on'] = str(g['started_on'])
+    payload = json.dumps(g)
+    print(payload)
+    salted_payload = payload + app.config.get('HASH_SALT')
+    h = hashlib.md5(salted_payload.encode())
+    hash = h.hexdigest()
+    return hash
+
+
+@app.route('/submit', methods=['POST'])
 @rate_limit(5, timedelta(minutes=30))
 async def submit():
+    global ID
     data = await request.get_json()
 
+    id = data.get('id')
+    session = data.get('session')
+    if session:
+        session = uuid.UUID(session)
     guesses = data.get('guesses')
     started_on = data.get('startedOn')
+    if started_on:
+        started_on = datetime.utcfromtimestamp(started_on/1000)
     ended_on = data.get('endedOn')
+    if ended_on:
+        ended_on = datetime.utcfromtimestamp(ended_on/1000)
     length = data.get('length')
     mode = data.get('mode')
     won = data.get('won')
 
-    required = [guesses, started_on, ended_on, length, mode, won]
+    required = [id, session, guesses, started_on, ended_on, length, mode, won]
     if any(x is None for x in required):
-        return jsonify({'error': 'Missing required fields'}), 400
+        return jsonify({'error': 'Missing required fields.'}), 400
+    if id != ID:
+        return jsonify({'error': 'Old puzzle.'}), 400
 
-    game = Game(guesses=guesses, started_on=started_on, ended_on=ended_on, length=length, mode=mode, won=won)
+    game = None
+    with db_session:
+        game = Game(
+            puzzle=id,
+            session=session, 
+            guesses=guesses, 
+            started_on=started_on, 
+            ended_on=ended_on, 
+            length=length, 
+            mode=mode, 
+            won=won
+        )
 
     if game:
-        return jsonify({'game': game}), 200
+        h = await hash_game(game)
+        return jsonify({'id': game.id, 'hash': h, 'hash_version': '1.0'}), 200
     return jsonify({'error': 'Error saving game.'}), 400
 
 
@@ -115,9 +156,9 @@ async def daily_reset():
     global WORDS, ID, RESET_DATETIME
     data = None
     words = None
-    with open('words.txt', 'r') as fin:
+    with open(dir_path + '/words.txt', 'r') as fin:
         data = fin.read().splitlines(True)
-    with open('words.txt', 'w') as fout:
+    with open(dir_path + '/words.txt', 'w') as fout:
         words = data[0]
         fout.writelines(data[1:])
     words = words.split(',')
