@@ -1,7 +1,7 @@
 import os
 import asyncio
-from datetime import timedelta
-import schedule
+from datetime import timedelta, datetime, date
+# import aioschedule as schedule
 
 from quart import Quart, make_response, render_template, request, jsonify, url_for, current_app, redirect, send_from_directory 
 import quart.flask_patch
@@ -61,8 +61,9 @@ db.bind('sqlite', filename='database.sqlite', create_db=True)
 db.generate_mapping(create_tables=True)
 
 WORDS = {}
-RESET_DATETIME = ""
-ID = 1
+today = date.today()
+RESET_DATETIME = datetime(day=today.day, month=today.month, year=today.year) + timedelta(days=1)
+ID = 0
 
 
 @app.route('/manifest.json')
@@ -77,7 +78,14 @@ async def static_from_root():
 @app.route('/')
 @rate_limit(5, timedelta(minutes=5))
 async def catch_all():
-    return await render_template("index.html", five="ZEBRA", six="TAMALE", game_id=1, payload=400)
+    global WORDS, ID, RESET_DATETIME
+    delta = round((RESET_DATETIME - datetime.now()).total_seconds())
+    
+    # If the daily_reset time has passed load the new word expecting the chron job has finished
+    if (delta < 0):
+        delta = await load_words() # get the new delta if it has been updated
+
+    return await render_template("index.html", five=WORDS['classic'], six=WORDS['plus'], game_id=ID, payload=delta)
 
 
 @app.route('/submit')
@@ -103,7 +111,8 @@ async def submit():
     return jsonify({'error': 'Error saving game.'}), 400
 
 
-def daily_reset():
+async def daily_reset():
+    global WORDS, ID, RESET_DATETIME
     data = None
     words = None
     with open('words.txt', 'r') as fin:
@@ -112,39 +121,51 @@ def daily_reset():
         words = data[0]
         fout.writelines(data[1:])
     words = words.split(',')
-    WORDS['classic'] = words[0]
-    WORDS['plus'] = words[1][:-1]
-    print(WORDS)
+    
+    ID += 1
+    RESET_DATETIME = datetime(day=today.day, month=today.month, year=today.year) + timedelta(days=1)
+    WORDS['classic'] = words[0].strip()
+    WORDS['plus'] = words[1].strip()
+    print(WORDS, ID, RESET_DATETIME)
 
     with db_session:
         Word(id=ID, mode="classic", word=WORDS['classic'])
         Word(id=ID, mode="plus", word=WORDS['plus'])
 
 
-def load_words():
+async def load_words():
+    global WORDS, ID, RESET_DATETIME
+    
     with db_session:
+        # If there are no words in the Word table perform a daily_reset (usually is a cron job)
         if not Word.select().exists():
-            daily_reset()
+            await daily_reset()
          
         word = Word.select().order_by(lambda p: desc(p.created_on))[:][0]
+        
+        # If a new word was not detected do not change anything
+        # The chron job could still be working on adding the new word
+        if word.id == ID:
+            return round((RESET_DATETIME - datetime.now()).total_seconds())
+        
         ID = word.id
         words = Word.select(lambda w: w.id == word.id)[:]
         
         for w in words:
             WORDS[w.mode] = w.word
 
-
-async def run_scheduler():
-    while True:
-        schedule.run_pending()
+        RESET_DATETIME = datetime(day=today.day, month=today.month, year=today.year) + timedelta(days=1)
+        return round((RESET_DATETIME - datetime.now()).total_seconds())
 
 
 @app.before_serving
 async def startup():
-    # load_words()
-    schedule.every().minute.at(":14").do(daily_reset)
-    app.background_task = asyncio.ensure_future(run_scheduler())
-
+    await load_words()
+    # schedule.every(1).minutes.do(daily_reset)
+    # app.add_background_task(run_pending)
+    # asyncio.ensure_future(run_pending())
+    # asyncio.get_running_loop().run_in_executor(None, pending())
+    # Schedule a separate chron job on server
 
 if __name__ == '__main__':
     from argparse import ArgumentParser
