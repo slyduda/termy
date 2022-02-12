@@ -107,7 +107,7 @@ const store = createStore({
    },
    actions: {
         load(context, payload) {
-            if (payload.id === "{@ game_id @}") payload.id = 4
+            if (payload.id === "{@ game_id @}") payload.id = 7
             if (payload[5] === "{@ five @}") payload[5] = "ZEBRA"
             if (payload[6] === "{@ six @}") payload[6] = "ZIPPER"
             if (payload.p === "{@ payload @}") payload.p = 24 * 60 * 60
@@ -144,7 +144,7 @@ const store = createStore({
             if (context.state.guesses.length === 0) context.commit('start')
             context.commit('submit')
             if ( context.getters.won ) {
-                context.dispatch('admin/alert', "You won!")
+                context.dispatch('admin/alert', "You got it!")
                 context.commit('end')
                 context.dispatch('storage/load')
             } else if ( context.state.tries === context.state.guesses.length ) {
@@ -294,7 +294,7 @@ const store = createStore({
             
             const store = JSON.parse(localStorage.games)
             store[state.id][state.length].endedOn = state.endTime
-            store[state.id][state.length].won = state.guesses[state.guesses.length - 1] === state.solution
+            store[state.id][state.length].won = state.guesses[state.guesses.length - 1] === state.solution && state.guesses.length <= 6
 
             localStorage.games = JSON.stringify(store)
             state.ended = true

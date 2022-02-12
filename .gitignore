@@ -1,3 +1,6 @@
 words.txt
 database.sqlite
 cron.txt
+
+backups/
+__pycache__/
