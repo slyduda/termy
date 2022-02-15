@@ -40,6 +40,15 @@
                     <Toggle :value="timeChallenge" @toggle="$store.dispatch('settings/toggleTimeChallenge')"/>
                 </div>
             </div>
+            <div class="border-b border-solid border-gray-300 dark:border-gray-700 py-4 text-left flex justify-between">
+                <div>
+                    <h5 class="text-lg leading-snug">Feedback</h5>
+                    <p class="text-xs leading-snug">Termy is a collectively owned word game!</p>
+                </div>
+                <div class="flex items-center">
+                    <a class="underline text-lg" href="https://twitter.com/slyduda">Twitter</a>
+                </div>
+            </div>
             <button class="absolute top-4 right-0" @click="toggle">
                 <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
                     <path  class="fill-gray-900 dark:fill-white"  d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path>
