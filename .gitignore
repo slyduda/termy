@@ -2,5 +2,8 @@ words.txt
 database.sqlite
 cron.txt
 
+env/
+
 backups/
+backup.sh
 __pycache__/

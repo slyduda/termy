@@ -5,6 +5,7 @@
     <SettingModal @toggle="setting = !setting" :visible="setting"/>
     <ScoreModal @toggle="score = !score" :visible="score"/>
     <ContinueModal :visible="!playing" />
+    <UpdateModal @toggle="update = !update" :visible="update" />
     <div class="w-full absolute mt-3 flex justify-center">
       <Alert :message="alert"/>
     </div>
@@ -12,9 +13,14 @@
         <div class="w-full max-w-lg flex justify-center mx-auto items-center relative">
             <div class="left-2 absolute flex">
                 <button @click="about = !about">
-                    <svg xmlns="http://www.w3.org/2000/svg"  height="24" viewBox="0 0 24 24" width="24">
-                        <path class="fill-gray-900 dark:fill-white" d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"></path>
-                    </svg>
+                  <div class="rounded-full font-bold flex text-white items-center justify-center leading-none border-solid" style="height: 25px; width: 25px; border-width: 3px">
+                    ?
+                  </div>
+                </button>
+                <button class="ml-4" @click="update = !update">
+                  <div class="rounded-full font-bold flex text-white items-center justify-center leading-none border-solid" style="height: 25px; width: 25px; border-width: 3px">
+                    !
+                  </div>
                 </button>
                 <div v-if="timeChallenge" class="ml-4 text-gray-400 dark:text-gray-600 font-bold">{{ fancyTmeRemaining }}</div>
             </div>
@@ -55,6 +61,7 @@
 
 <script>
 import Alert from './components/base/Alert.vue'
+import UpdateModal from './components/Modal/UpdateModal.vue'
 import ScoreModal from './components/Modal/ScoreModal.vue'
 import SettingModal from './components/Modal/SettingModal.vue'
 import ContinueModal from './components/Modal/ContinueModal.vue'
@@ -119,13 +126,15 @@ export default {
     SettingModal,
     ScoreModal,
     Alert,
-    ContinueModal
+    ContinueModal,
+    UpdateModal
   },
   data() {
     return {
       about: false,
       setting: false,
       score: false,
+      update: false,
       timeRemaining: null,
     }
   },
