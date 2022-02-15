@@ -10,6 +10,7 @@
                 </h4>
                 
                 <ul class="text-left list-disc list-inside">
+                    <li>Changed error and warning messages.</li>
                     <li>Added Updates Menu accessible from the Navbar on each client update.</li>
                     <li>Fixed Current Streak and Max Streak on Stats Menu.</li>
                     <li>Added Feedback Options in Settings Menu.</li>

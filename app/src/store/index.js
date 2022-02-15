@@ -130,17 +130,23 @@ const store = createStore({
         },
         
         submit (context) {
+            if (context.state.current.length < context.state.length) {
+                context.commit('admin/alert', `Guess is not ${context.state.length} letters`)
+                return
+            }
+            
             if (context.state.length === 5) {
                 if ( LIST5.indexOf(context.state.current.toLowerCase()) < 0 ) {
-                    context.commit('admin/alert', 'Not valid')
+                    context.commit('admin/alert', 'Word not recognized')
                     return
                 }
             } else {
                 if ( LIST6.indexOf(context.state.current.toUpperCase()) < 0 ) {
-                    context.commit('admin/alert', 'Not valid')
+                    context.commit('admin/alert', 'Word not recognized')
                     return
                 }
             }
+            
             if (context.state.guesses.length === 0) context.commit('start')
             context.commit('submit')
             if ( context.getters.won ) {
