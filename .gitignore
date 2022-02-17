@@ -4,6 +4,7 @@ cron.txt
 
 env/
 
+termy
 backups/
 backup.sh
 __pycache__/
