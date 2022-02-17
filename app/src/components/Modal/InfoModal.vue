@@ -6,30 +6,25 @@
         <div class="w-full max-w-xs mx-4 dark:text-white p-6 text-sm relative bg-white relative rounded-lg dark:bg-gray-800">
             <div class="mb-4">
                 <h4 class="text-lg font-semibold mb-2 text-left flex items-center">
-                    Updates                
+                    Active Union Efforts                
                 </h4>
                 
-                <ul class="text-left list-disc list-inside">
-                    <li>Changed error and warning messages.</li>
-                    <li>Added Updates Menu accessible from the Navbar on each client update.</li>
-                    <li>Fixed Current Streak and Max Streak on Stats Menu.</li>
-                    <li>Added Feedback Options in Settings Menu.</li>
-                    <li>Fixed bug that gave wins on successful guesses <strong>after</strong> 6 tries.</li>
-                    <li>Some animations</li>
-                </ul>
-            </div>
-        
-            <div class="">    
-                <h4 class="text-lg font-semibold mb-2 text-left flex items-center">
-                    Up Next                
-                </h4>
-                
-                <ul class="text-left list-disc list-inside">
-                    <li>More animations</li>
-                    <li>New modes 🤫</li>
-                    <li>Classic colors togglable via Color Blind Mode Off</li>
-                    <li>Color fixes</li>
-                </ul>
+                <div class="text-left mb-2">
+                    <h6 class="font-bold">Starbucks</h6>
+                    <a href="https://sbworkersunited.org/new-page-1" class="underline">SB Workers United</a>
+                    <p>Support: To be added</p>
+                </div>
+
+                <div class="text-left mb-2">
+                    <h6 class="font-bold">REI</h6>
+                    <a href="https://twitter.com/UnionElections/status/1484933120830980100" class="underline">REI New York City</a>
+                    <p>Support: To be added</p>
+                </div>
+
+                <div class="text-left mb-2">
+                    <h6 class="font-bold">JORTS</h6>
+                    <a href="https://twitter.com/JortsTheCat/status/1491162082649440258" class="underline">How to form</a>
+                </div>
             </div>
 
             <button class="absolute top-4 right-4" @click="toggle">
@@ -43,7 +38,7 @@
 
 <script>
 export default {
-    name: 'UpdateModal',
+    name: 'InfoModal',
     props: {
         visible: {
             type: Boolean,

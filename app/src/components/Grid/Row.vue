@@ -1,6 +1,8 @@
 <template>
-    <div class="flex flex-1 justify-center mb-1 last:mb-0" :guess="guess">
-        <Cell v-for="(char, index) in convertedGuess" :small="small" :key="char" :value="char[0]" :status="char[1]" :hint="hints[index]"/>
+    <div class="flex flex-1 justify-center mb-1 last:mb-0" :class="[
+        {'row-animation': checked && current}
+        ]" :guess="guess">
+        <Cell v-for="char in convertedGuess" :small="small" :key="char[2]" :value="char[0]" :status="char[1]" :hint="hints[char[2]]"/>
     </div>
 </template>
 
@@ -12,6 +14,10 @@ export default {
         Cell
     },
     props: {
+        current: {
+            type: Boolean,
+            default: false
+        },
         value: {
             type: [Array, String],
             default: ''
@@ -28,6 +34,9 @@ export default {
         }
     },
     computed: {
+        checked() {
+            return this.$store.state.checked
+        },
         wordLength() {
             return this.$store.state.length
         },
@@ -43,11 +52,48 @@ export default {
                 guessArray.push(['', ''])
             }
             return guessArray
+        },
+        indexedGuess() {
+            const newItems = []
+            this.convertedGuess.forEach((elem, index) => {
+              newItems.push( elem.push(index) )  
+            })
+            return newItems
+        }
+    },
+    watch: {
+        checked() {
+            const that = this
+            if (this.checked) { 
+                setTimeout(() => {
+                    that.$store.dispatch('checkedCaught')
+                } , 500 )
+            }
         }
     }
 }
 </script>
 
 <style>
+.row-animation {
+ animation-name: shake;
+ animation-iteration-count: 3;
+ animation-timing-function: ease;
+ animation-duration: .15s; /* or: Xms */
+}
 
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(10px);
+  }
+  75% {
+    transform: translateX(-10px);
+  }
+100% {
+    transform: translateX(0);
+  }
+}
 </style>

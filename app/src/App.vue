@@ -5,6 +5,7 @@
     <SettingModal @toggle="setting = !setting" :visible="setting"/>
     <ScoreModal @toggle="score = !score" :visible="score"/>
     <ContinueModal :visible="!playing" />
+    <InfoModal @toggle="info = !info" :visible="info" />
     <UpdateModal @toggle="update = !update" :visible="update" />
     <div class="w-full absolute mt-3 flex justify-center">
       <Alert :message="alert"/>
@@ -17,10 +18,13 @@
                     ?
                   </div>
                 </button>
-                <button class="ml-4" @click="update = !update">
+                <button v-if="version" class="ml-4" @click="update = !update; $store.dispatch('storage/newVersion', false);">
                   <div class="rounded-full font-bold flex text-white items-center justify-center leading-none border-solid" style="height: 25px; width: 25px; border-width: 3px">
                     !
                   </div>
+                </button>
+                <button v-else class="ml-4" @click="info = !info">
+                  ✊
                 </button>
                 <div v-if="timeChallenge" class="ml-4 text-gray-400 dark:text-gray-600 font-bold">{{ fancyTmeRemaining }}</div>
             </div>
@@ -62,6 +66,7 @@
 <script>
 import Alert from './components/base/Alert.vue'
 import UpdateModal from './components/Modal/UpdateModal.vue'
+import InfoModal from './components/Modal/InfoModal.vue'
 import ScoreModal from './components/Modal/ScoreModal.vue'
 import SettingModal from './components/Modal/SettingModal.vue'
 import ContinueModal from './components/Modal/ContinueModal.vue'
@@ -125,6 +130,7 @@ export default {
     AboutModal,
     SettingModal,
     ScoreModal,
+    InfoModal,
     Alert,
     ContinueModal,
     UpdateModal
@@ -135,6 +141,7 @@ export default {
       setting: false,
       score: false,
       update: false,
+      info: false,
       timeRemaining: null,
     }
   },
@@ -159,6 +166,9 @@ export default {
     },
     end() {
         return this.$store.state.ended
+    },
+    version() {
+      return this.$store.state.storage.version
     },
     playing() {
         return this.$store.state.playing

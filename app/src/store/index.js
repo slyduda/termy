@@ -104,6 +104,8 @@ const store = createStore({
         
         playing: true,
         submitted: false,
+        checked: false,
+        
    },
    actions: {
         load(context, payload) {
@@ -129,20 +131,26 @@ const store = createStore({
             context.commit('reset')  
         },
         
+        checkedCaught(context) {
+            context.commit('shake', false)
+        },
         submit (context) {
             if (context.state.current.length < context.state.length) {
                 context.commit('admin/alert', `Guess is not ${context.state.length} letters`)
+                context.commit('shake', true)
                 return
             }
             
             if (context.state.length === 5) {
                 if ( LIST5.indexOf(context.state.current.toLowerCase()) < 0 ) {
                     context.commit('admin/alert', 'Word not recognized')
+                    context.commit('shake', true)
                     return
                 }
             } else {
                 if ( LIST6.indexOf(context.state.current.toUpperCase()) < 0 ) {
                     context.commit('admin/alert', 'Word not recognized')
+                    context.commit('shake', true)
                     return
                 }
             }
@@ -182,6 +190,10 @@ const store = createStore({
         }
    },
    mutations: {
+        shake(state, payload) {
+            state.checked = payload
+        },
+
         load(state, payload) {
             state.id = Number(payload.id)
             
