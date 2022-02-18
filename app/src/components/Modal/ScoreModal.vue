@@ -1,9 +1,12 @@
 <template>
-    <div v-if="visible" class="w-full h-full absolute z-50 flex justify-center items-center" >
-        <div class="w-full h-full bg-gray-900 opacity-50 absolute">
-
-        </div>
-        <div class="w-full max-w-xs mx-4 dark:text-white p-6 text-sm relative bg-white relative rounded-lg dark:bg-gray-800">
+    <div class="w-full h-full absolute z-50 flex justify-center items-center pointer-events-none" >
+        <Transition :name="reducedMotion ? 'none' : 'fade'">
+            <div v-if="visible" class="w-full h-full absolute pointer-events-auto">
+                <div class="w-full h-full bg-gray-900 opacity-50"></div>
+            </div>
+        </Transition>
+        <Transition :name="reducedMotion ? 'none' : 'bounce'">
+        <div v-if="visible" class="w-full pointer-events-auto max-w-xs mx-4 dark:text-white p-6 text-sm relative bg-white relative rounded-lg dark:bg-gray-800">
             <h4 class="text-lg font-semibold mb-2 text-left flex items-center">
                 STATISTICS
                 <button @click="statisticsToggle = !statisticsToggle">
@@ -76,11 +79,11 @@
             <div v-if="ended" class="flex">
                 <div class="mr-2 flex-1">
                     <BaseCheckbox class="text-left mb-4" v-model:checked="link">Include Link</BaseCheckbox>
-                    <button class="rounded-lg bg-blue-500 h-12 text-white text-xl font-semibold w-full" @click="copyScore()">Share</button>
+                    <button class="rounded-lg h-12 text-white text-xl font-semibold w-full" :class="[bgPrimary]" @click="copyScore()">Share</button>
                 </div>
                 <div v-if="shared" class="ml-2 flex-1">
                     <p class="text-sm pb-4 pt-1 leading-snug">Up for a challenge?</p>
-                    <button class="rounded-lg bg-orange-500 h-12 text-white text-xl font-semibold w-full" @click="switchMode()">Termy{{plus ? "" : '+' }}</button>    
+                    <button class="rounded-lg h-12 text-white text-xl font-semibold w-full" :class="[bgSecondary]" @click="switchMode()">Termy{{plus ? "" : '+' }}</button>    
                 </div>
             </div>
             <button class="absolute top-4 right-4" @click="toggle">
@@ -89,6 +92,7 @@
                 </svg>
             </button>
         </div>
+        </Transition>
     </div>
 </template>
 
@@ -159,6 +163,19 @@ export default {
         Bar
     },
     computed: {
+
+        reducedMotion() {
+            return this.$store.state.settings.reducedMotion
+        },
+        colorBlind() {
+            return this.$store.state.settings.colorBlind;
+        },
+        bgPrimary() { 
+            return this.colorBlind ? 'bg-blue-500' : 'bg-green-500'
+        },
+        bgSecondary() {
+            return this.colorBlind ? 'bg-orange-500' : 'bg-yellow-400'
+        },
         length() {
             return this.$store.state.length
         },
@@ -169,9 +186,11 @@ export default {
             return this.$store.state.storage.games
         },
         gamesPlayed() {
+            if (!this.games) return
             return Object.values(this.games).filter((game) => game[this.length] !== undefined).length
         },
         winPercentage() {
+            if (!this.games) return
             const gamesWon = Object.values(this.games).filter((game) => game[this.length] !== undefined).filter((game) => game[this.length].won === true).length
             if (!gamesWon) return 0
             return Math.round(gamesWon/this.gamesPlayed * 10000) / 100
@@ -180,6 +199,7 @@ export default {
             return 0
         },
         currentStreak() {
+            if (!this.games) return
             let n = 0
             let index = this.id
             const currentPuzzles = this.games[this.id]
@@ -340,5 +360,39 @@ export default {
 </script>
 
 <style>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s;
+}
 
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.bounce-enter-active,
+.bounce-leave-active {
+  transition: 0.5s;
+}
+
+
+.bounce-enter-active {
+  animation: bounce-in 0.5s;
+}
+.bounce-leave-active {
+  animation: bounce-in 0.5s reverse;
+}
+
+
+@keyframes bounce-in {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
 </style>

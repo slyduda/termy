@@ -9,8 +9,8 @@
         :class="[
             {'bg-gray-200 dark:bg-gray-500 hover:bg-gray-300 active:bg-gray-400': !status},
             { 'bg-gray-400 dark:bg-gray-700 bg-gray-400 text-white': status === 'absent' },
-            {'bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white': status === 'correct'},
-            { 'bg-orange-500 hover:bg-orange-600 active:bg-orange-700 dark:bg-orange-500 text-white': status === 'present' }
+            {[`${bgPrimary} hover:${bgPrimaryHover} active:${bgPrimaryActive} text-white`]: status === 'correct'},
+            {[`${bgSecondary} hover:${bgSecondaryHover} active:${bgSecondaryActive} text-white`]: status === 'present' }
         ]"
         @click="handleClick($event, value)"
         >
@@ -32,6 +32,29 @@ export default {
         status: {
             type: String,
             default: ""
+        }
+    },
+    computed: {
+        colorBlind() {
+            return this.$store.state.settings.colorBlind
+        },
+        bgPrimary() { 
+            return this.colorBlind ? 'bg-blue-500' : 'bg-green-500'
+        },
+        bgPrimaryActive() { 
+            return this.colorBlind ? 'bg-blue-700' : 'bg-green-700'
+        },
+        bgPrimaryHover() { 
+            return this.colorBlind ? 'bg-blue-600' : 'bg-green-600'
+        },
+        bgSecondary() {
+            return this.colorBlind ? 'bg-orange-500' : 'bg-yellow-400'
+        },
+        bgSecondaryActive() {
+            return this.colorBlind ? 'bg-orange-700' : 'bg-yellow-600'
+        },
+        bgSecondaryHover() {
+            return this.colorBlind ? 'bg-orange-600' : 'bg-yellow-500'
         }
     },
     methods: {

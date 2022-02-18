@@ -33,6 +33,15 @@
             </div>
             <div class="border-b border-solid border-gray-300 dark:border-gray-700 py-4 text-left flex justify-between">
                 <div>
+                    <h5 class="text-lg leading-snug">Reduced Motion</h5>
+                    <p class="text-xs leading-snug">Avoid animations that might make you queasy.</p>
+                </div>
+                <div class="flex items-center">
+                    <Toggle :value="reducedMotion" @toggle="$store.dispatch('settings/toggleReducedMotion')"/>
+                </div>
+            </div>
+            <div class="border-b border-solid border-gray-300 dark:border-gray-700 py-4 text-left flex justify-between">
+                <div>
                     <h5 class="text-lg leading-snug">Time Challenge</h5>
                     <p class="text-xs leading-snug">Play with a timer for an extra challenge</p>
                 </div>
@@ -87,6 +96,9 @@ export default {
         },
         colorBlind() {
             return this.$store.state.settings.colorBlind;
+        },
+        reducedMotion() {
+            return this.$store.state.settings.reducedMotion;
         },
         id() {
             return this.$store.state.id

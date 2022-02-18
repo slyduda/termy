@@ -6,16 +6,25 @@
         <div class="w-full max-w-xs mx-4 dark:text-white p-6 text-sm relative bg-white relative rounded-lg dark:bg-gray-800">
             <div class="mb-4">
                 <h4 class="text-lg font-semibold mb-2 text-left flex items-center">
+                    Issues                
+                </h4>
+                
+                <ul class="text-left">
+                    <li>On 02/18/2022 an invalid word (FRIDAY) was loaded for Termy+. Anyone who played from the time 4:00 PM PST - 4:17 PM PST may have been affected. If you think your score was ruined because of this issue, please reach out. Settings > Feedback > Twitter.</li>
+                </ul>
+            </div>
+            <div class="mb-4">
+                <h4 class="text-lg font-semibold mb-2 text-left flex items-center">
                     Updates                
                 </h4>
                 
                 <ul class="text-left list-disc list-inside">
-                    <li>Changed error and warning messages.</li>
-                    <li>Added Updates Menu accessible from the Navbar on each client update.</li>
-                    <li>Fixed Current Streak and Max Streak on Stats Menu.</li>
-                    <li>Added Feedback Options in Settings Menu.</li>
-                    <li>Fixed bug that gave wins on successful guesses <strong>after</strong> 6 tries.</li>
-                    <li>Some animations</li>
+                    <li>Added worker information</li>
+                    <li>Fixed 'Classic Colors' setting</li>
+                    <li>Fixed 'Dark Theme' setting</li>
+                    <li>Fixed 'Letter Helper'</li>
+                    <li>Added 'Reduced Motion' setting</li>
+                    <li>More animations</li>
                 </ul>
             </div>
         
@@ -25,9 +34,9 @@
                 </h4>
                 
                 <ul class="text-left list-disc list-inside">
-                    <li>More animations</li>
-                    <li>New modes 🤫</li>
-                    <li>Classic colors togglable via Color Blind Mode Off</li>
+                    <li>Termyutation mode</li>
+                    <li>Even more animations</li>
+                    <li>Information architecture overhaul</li>
                     <li>Color fixes</li>
                 </ul>
             </div>

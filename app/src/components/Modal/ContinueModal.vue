@@ -7,10 +7,10 @@
             <p class="mb-4 text-left">You didn't get the word in 6 tries, but you can still keep trying if you want! Your game will still be marked as a loss.</p>
             <div class="flex">
                 <div class="mr-2 flex-1">
-                    <button @click="cont" class="rounded-lg bg-blue-500 h-12 text-white text-xl font-semibold w-full">Continue</button>
+                    <button @click="cont" class="rounded-lg h-12 text-white text-xl font-semibold w-full" :class="[bgPrimary]">Continue</button>
                 </div>
                 <div class="ml-2 flex-1">
-                    <button class="rounded-lg bg-orange-500 h-12 text-white text-xl font-semibold w-full" @click="quit">Give Up</button>    
+                    <button @click="quit" class="rounded-lg h-12 text-white text-xl font-semibold w-full" :class="[bgSecondary]">Give Up</button>    
                 </div>
             </div>
         </div>
@@ -30,6 +30,17 @@ export default {
             this.$store.dispatch('fail')
             this.$store.commit('playing', true)
         }
+    },
+    computed: {
+        colorBlind() {
+            return this.$store.state.settings.colorBlind;
+        },
+        bgPrimary() { 
+            return this.colorBlind ? 'bg-blue-500' : 'bg-green-500'
+        },
+        bgSecondary() {
+            return this.colorBlind ? 'bg-orange-500' : 'bg-yellow-400'
+        },
     }
 }
 </script>

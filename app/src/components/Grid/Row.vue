@@ -2,7 +2,7 @@
     <div class="flex flex-1 justify-center mb-1 last:mb-0" :class="[
         {'row-animation': checked && current}
         ]" :guess="guess">
-        <Cell v-for="char in convertedGuess" :small="small" :key="char[2]" :value="char[0]" :status="char[1]" :hint="hints[char[2]]"/>
+        <Cell v-for="(char, index) in convertedGuess" :animations="!correct" :small="small" :key="index" :value="char[0]" :status="char[1]" :hint="hints[index]"/>
     </div>
 </template>
 
@@ -52,6 +52,12 @@ export default {
                 guessArray.push(['', ''])
             }
             return guessArray
+        },
+        correct() {
+            function checkStatus(letter) {
+                return letter[1] === 2
+            }
+            return this.convertedGuess.every(checkStatus)
         },
         indexedGuess() {
             const newItems = []

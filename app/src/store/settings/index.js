@@ -6,6 +6,7 @@ export default {
         colorBlind: true,
         letterHelper: true,
         darkTheme: true,
+        reducedMotion: false,
     },
     actions: {
         toggleColorBlind(context) {
@@ -17,6 +18,11 @@ export default {
             const settings = JSON.parse(localStorage.settings)
             const val = !settings.timeChallenge
             context.dispatch('save', { timeChallenge: val })
+        },
+        toggleReducedMotion(context) {
+            const settings = JSON.parse(localStorage.settings)
+            const val = !settings.reducedMotion
+            context.dispatch('save', { reducedMotion: val })
         },
         toggleLetterHelper(context) {
             const settings = JSON.parse(localStorage.settings)
@@ -44,12 +50,13 @@ export default {
             let settings = {}
             if (localStorage.settings) settings = JSON.parse(localStorage.settings)
             const payload = {
-                darkTheme: settings.darkTheme | true,
-                colorBlind: settings.colorBlind | true,
-                letterHelper: settings.letterHelper | true,
-                timeChallenge: settings.timeChallenge | false,
+                darkTheme: settings.darkTheme !== undefined ? Boolean(settings.darkTheme) : window.matchMedia('(prefers-color-scheme: dark)').matches,
+                colorBlind: settings.colorBlind !== undefined ? Boolean(settings.colorBlind) : true,
+                letterHelper: settings.letterHelper !== undefined ? Boolean(settings.letterHelper) : true,
+                reducedMotion: settings.reducedMotion !== undefined ? Boolean(settings.reducedMotion) : window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+                timeChallenge: settings.timeChallenge !== undefined ? Boolean(settings.timeChallenge) : false,
             }
-            context.commit('load', payload)
+            context.commit('loads', payload)
             localStorage.settings = JSON.stringify(payload)
         }
     },
@@ -57,10 +64,12 @@ export default {
         set(state, payload) {
             state[payload[0]] = payload[1]
         },
-        load(state, payload) {
+        loads(state, payload) {
+            console.log(payload)
             state.darkTheme = payload.darkTheme
             state.colorBlind = payload.colorBlind
             state.letterHelper = payload.letterHelper
+            state.reducedMotion = payload.reducedMotion
             state.timeChallenge = payload.timeChallenge
         }
     },

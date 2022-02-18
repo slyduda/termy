@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full h-full flex flex-col items-stretch bg-gray-50 dark:bg-gray-900 ">
+  <div class="overflow-hidden w-full h-full flex flex-col items-stretch bg-gray-50 dark:bg-gray-900 ">
 
     <AboutModal @toggle="about = !about" :visible="about"/>
     <SettingModal @toggle="setting = !setting" :visible="setting"/>
@@ -19,7 +19,7 @@
                   </div>
                 </button>
                 <button v-if="version" class="ml-4" @click="update = !update; $store.dispatch('storage/newVersion', false);">
-                  <div class="rounded-full font-bold flex text-white items-center justify-center leading-none border-solid" style="height: 25px; width: 25px; border-width: 3px">
+                  <div class="rounded-full font-bold flex text-white items-center justify-center leading-none border-solid text-red-500 border-red-500" style="height: 25px; width: 25px; border-width: 3px">
                     !
                   </div>
                 </button>
@@ -34,9 +34,9 @@
               </button>
               <button v-else @click="$store.dispatch('switchMode')" class="text-4xl grow font-bold dark:text-white flex">
                 <h1 class="tracking-widest">TERMY</h1>
-                <strong class="text-blue-500 font-black">+</strong>  
+                <strong class="font-black" :class="[textPrimary]">+</strong>  
               </button>
-              <p class="absolute text-xs -right-8 bottom-0 text-gray-400 dark:text-gray-600 font-bold">BETA</p>
+              <p class="hidden absolute text-xs -right-8 bottom-0 text-gray-400 dark:text-gray-600 font-bold">BETA</p>
             
             </div>
             <div class="right-2 absolute">
@@ -58,7 +58,7 @@
         :style="{width: `${100 - (percentRemaining*100) }%` }">
       </div>
     </div>
-    <Grid class="flex-shrink flex-grow"/>
+    <Grid class="flex-shrink flex-grow" :key="length"/> 
     <Keyboard />
   </div>
 </template>
@@ -146,6 +146,15 @@ export default {
     }
   },
   computed: {
+    colorBlind() {
+        return this.$store.state.settings.colorBlind;
+    },
+    textPrimary() { 
+        return this.colorBlind ? 'text-blue-500' : 'text-green-500'
+    },
+    textSecondary() {
+        return this.colorBlind ? 'text-orange-500' : 'text-yellow-400'
+    },
     length() {
       return this.$store.state.length
     },

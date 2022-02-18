@@ -5,7 +5,7 @@ module.exports = {
   darkMode: "class", // or 'media' or 'class'
   theme: {
     extend: {
-      colors: {        
+      colors: {       
         slate: colors.slate,        
         orange: colors.orange,    
       },

@@ -14,7 +14,7 @@
           class="box-content border-2 border-solid h-6 w-10 border-gray-700 rounded-full transform duration-500"
           :class="[
             { 'bg-gray-700 border-gray-700': !value},
-            { 'bg-blue-500 border-blue-500': value},
+            { [`${bgPrimary} ${borderPrimary}`]: value},
           ]"
         >
           <div
@@ -42,6 +42,23 @@ export default {
             default: false,
             type: Boolean
         }
+    },
+    computed: {
+      colorBlind() {
+          return this.$store.state.settings.colorBlind
+      },
+      bgPrimary() { 
+          return this.colorBlind ? 'bg-blue-500' : 'bg-green-500'
+      },
+      borderPrimary() { 
+          return this.colorBlind ? 'border-blue-500' : 'border-green-500'
+      },
+      bgSecondary() {
+          return this.colorBlind ? 'bg-orange-500' : 'bg-yellow-400'
+      },
+      borderSecondary() { 
+          return this.colorBlind ? 'border-orange-500' : 'border-yellow-400'
+      },
     }
 }
 </script>

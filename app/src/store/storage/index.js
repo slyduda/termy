@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 const VERSION_MAJOR = 1
 const VERSION_MINOR = 0
-const VERSION_MINI = 1
+const VERSION_MINI = 2
 
 
 export default {

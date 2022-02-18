@@ -1,9 +1,9 @@
 <template>
     <div class="max-w-lg mx-auto object-scale-down flex justify-center items-center">
         <div ref="grid" class="flex flex-col p-6">
-            <Row v-for="guess in guesses" :key="guess" :value="guess" class="flex-1" :small="smallLetters"/>
-            <Row v-if="guesses.length < tries" id="currentRow" :current="true" :value="current" :hints="hints" class="flex-1" :small="smallLetters"/>
-            <Row v-for="guess in incomplete" :key="guess" :value="guess" class="flex-1" :small="smallLetters"/>
+            <Row v-for="guess in guesses" :key="guess || length" :value="guess" class="flex-1" :small="smallLetters"/>
+            <Row v-if="guesses.length < tries" id="currentRow" :key="guesses.length + 1" :current="true" :value="current" :hints="hints" class="flex-1" :small="smallLetters"/>
+            <Row v-for="(guess, index) in incomplete" :key="index" :value="guess" class="flex-1" :small="smallLetters"/>
         </div>
     </div>
 </template>
