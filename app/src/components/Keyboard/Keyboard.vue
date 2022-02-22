@@ -35,7 +35,6 @@
         </div>
         <div class="flex justify-center">
             <Key :width="65.4" :value="'ENTER'" @click="nothing">
-                {ENTER_TEXT}
             </Key>
             <Key :value="'Z'" @click="nothing" :status="charStatuses['Z']" />
             <Key :value="'X'" @click="nothing" :status="charStatuses['X']" />
@@ -45,7 +44,7 @@
             <Key :value="'N'" @click="nothing" :status="charStatuses['N']" />
             <Key :value="'M'" @click="nothing" :status="charStatuses['M']" />
             <Key :width="65.4" :value="'DELETE'" @click="nothing">
-                {DELETE_TEXT}
+                <font-awesome-icon icon="backspace" class="text-xl" :class="['text-gray-900 dark:text-gray-100']"></font-awesome-icon>
             </Key>
         </div>
     </div>

@@ -1,58 +1,91 @@
 <template>
-  <div class="overflow-hidden w-full h-full flex flex-col items-stretch bg-gray-50 dark:bg-gray-900 ">
+  <div class="overflow-hidden w-full h-full flex flex-col items-stretch bg-gray-50 dark:bg-gray-900 relative">
 
     <AboutModal @toggle="about = !about" :visible="about"/>
     <SettingModal @toggle="setting = !setting" :visible="setting"/>
     <ScoreModal @toggle="score = !score" :visible="score"/>
-    <ContinueModal :visible="!playing" />
+    <ContinueModal :visible="$store.state.tries === $store.state.guesses.length && !$store.state.ended && $store.state.guesses.length < 10" />
     <InfoModal @toggle="info = !info" :visible="info" />
     <UpdateModal @toggle="update = !update" :visible="update" />
     <div class="w-full absolute mt-3 flex justify-center">
       <Alert :message="alert"/>
     </div>
     <div id="header" class="w-full py-2 max-w-7xl mx-auto border-b border-solid border-gray-300 dark:border-gray-700">
-        <div class="w-full max-w-lg flex justify-center mx-auto items-center relative">
-            <div class="left-2 absolute flex">
-                <button @click="about = !about">
-                  <div class="rounded-full font-bold flex text-white items-center justify-center leading-none border-solid" style="height: 25px; width: 25px; border-width: 3px">
-                    ?
-                  </div>
+        <div class="w-full max-w-lg mx-auto">
+          <div class="flex justify-between items-center mx-2">
+            <div class="flex">
+                <button @click="about = !about" class="p-2 flex justify-center items-center">
+                  <font-awesome-icon icon="info-circle" class="text-2xl" :class="['text-gray-900 dark:text-gray-100']"></font-awesome-icon>
                 </button>
-                <button v-if="version" class="ml-4" @click="update = !update; $store.dispatch('storage/newVersion', false);">
-                  <div class="rounded-full font-bold flex text-white items-center justify-center leading-none border-solid text-red-500 border-red-500" style="height: 25px; width: 25px; border-width: 3px">
-                    !
-                  </div>
+                <button v-if="version" class="p-2 flex justify-center items-center" @click="update = !update; $store.dispatch('storage/newVersion', false);">
+                  <font-awesome-icon icon="circle-exclamation" class="text-2xl" :class="['text-gray-900 dark:text-gray-100']"></font-awesome-icon>
                 </button>
-                <button v-else class="ml-4" @click="info = !info">
-                  ✊
+                <button v-else class="p-2 flex justify-center items-center" @click="info = !info">
+                  <font-awesome-icon icon="fist-raised" class="text-2xl" :class="['text-gray-900 dark:text-gray-100']"></font-awesome-icon>
                 </button>
                 <div v-if="timeChallenge" class="ml-4 text-gray-400 dark:text-gray-600 font-bold">{{ fancyTmeRemaining }}</div>
             </div>
             <div class="relative">
-              <button v-if="length === 5" @click="$store.dispatch('switchMode')" class="text-4xl grow font-bold dark:text-white">
+              <button @click="selectMode" v-if="mode === 'classic'" class="text-4xl grow font-bold dark:text-white flex items-center justify-center">
                 <h1 class="tracking-widest">TERMY</h1>
+                <font-awesome-icon class="text-xl ml-1" icon="caret-down" />
               </button>
-              <button v-else @click="$store.dispatch('switchMode')" class="text-4xl grow font-bold dark:text-white flex">
+              <button @click="selectMode" v-else-if="mode === 'plus'" class="text-4xl grow font-bold dark:text-white flex items-center justify-center">
                 <h1 class="tracking-widest">TERMY</h1>
-                <strong class="font-black" :class="[textPrimary]">+</strong>  
+                <div class="font-extrabold leading-none" :class="[textPrimary]" style="font-size: 2.5rem;">+</div>
+                <font-awesome-icon class="text-xl ml-1" icon="caret-down" />  
+              </button>
+              <button @click="selectMode" v-else class="text-4xl grow font-bold dark:text-white flex items-center justify-center">
+                <h1 class="tracking-widest text-3xl flex">TERM<p class="tracking-normal" :class="[textPrimary]">UTATE</p></h1>
+                <font-awesome-icon class="text-xl ml-1" icon="caret-down" />
               </button>
               <p class="hidden absolute text-xs -right-8 bottom-0 text-gray-400 dark:text-gray-600 font-bold">BETA</p>
             
             </div>
-            <div class="right-2 absolute">
-                <button class="mr-4" @click="score = !score">
-                    <svg xmlns="http://www.w3.org/2000/svg"  height="24" viewBox="0 0 24 24" width="24">
-                        <path class="fill-gray-900 dark:fill-white" d="M16,11V3H8v6H2v12h20V11H16z M10,5h4v14h-4V5z M4,11h4v8H4V11z M20,19h-4v-6h4V19z"></path>
-                    </svg>
+            <div class="flex">
+                <button class="p-2 flex justify-center items-center" @click="score = !score">
+                    <font-awesome-icon icon="chart-pie" class="text-2xl" :class="['text-gray-900 dark:text-gray-100']"></font-awesome-icon>
                 </button>
-                <button @click="setting = !setting">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
-                        <path class="fill-gray-900 dark:fill-white" d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"></path>
-                    </svg>
+                <button class="p-2 flex justify-center items-center" @click="setting = !setting">
+                    <font-awesome-icon icon="gear" class="text-2xl" :class="['text-gray-900 dark:text-gray-100']"></font-awesome-icon>
                 </button>
             </div>
+          </div>
         </div>
     </div>
+    <Transition :name="reducedMotion ? 'none' : 'fade'">
+      <div v-if="selecting" @click="selecting = false" class="w-full h-full absolute pointer-events-auto z-50">
+          <div class="w-full h-full bg-gray-900 opacity-50"></div>
+      </div>
+    </Transition>
+    <Transition>
+      <div v-if="selecting" class="absolute w-full h-full z-50 pointer-events-none">
+        <div class="z-50 mx-auto max-w-xs w-full bg-white dark:bg-gray-800 dark:text-white p-4 rounded-lg mt-14 pointer-events-auto">
+          <button @click="switchMode('classic')" class="mb-4 text-left text-sm w-full">
+            <div class="flex items-center text-2xl font-bold tracking-widest">
+              TERMY
+            </div>
+            The 5-letter guessing you know and love.
+          </button>
+          <button @click="switchMode('plus')" class="mb-4 text-left text-sm w-full">
+            <div class="flex text-2xl font-bold tracking-widest">
+              TERMY
+              <div class="font-extrabold leading-none text-3xl" :class="[textPrimary]">+</div>
+              <!-- 
+              <font-awesome-icon icon="plus" :class="[textPrimary]" />
+              -->
+            </div>
+            Regular Termy but with a 6-letter twist.
+          </button>
+          <button @click="switchMode('mutate')" class="text-left text-sm w-full">
+            <div class="flex items-center text-2xl font-bold tracking-widest">
+              TERM<p class="tracking-normal" :class="[textPrimary]">UTATE</p>
+            </div>
+            Make words with the letters you're given.
+          </button>
+        </div>
+      </div>
+    </Transition>
     <div v-if="timeRemaining" class="overflow-hidden">
       <div class="max-w-7xl border-b-4 border-solid border-blue-500 overflow-hidden" 
         :style="{width: `${100 - (percentRemaining*100) }%` }">
@@ -143,9 +176,14 @@ export default {
       update: false,
       info: false,
       timeRemaining: null,
+      selecting: false,
     }
   },
   computed: {
+    mode() {
+      if (this.$store.state.mode === 'termutation') return 'mutation'
+      return this.length === 6 ? 'plus' : 'classic' 
+    },
     colorBlind() {
         return this.$store.state.settings.colorBlind;
     },
@@ -179,9 +217,6 @@ export default {
     version() {
       return this.$store.state.storage.version
     },
-    playing() {
-        return this.$store.state.playing
-    },
     percentRemaining() {
       if (this.timeRemaining) return this.timeRemaining/this.time
       return null
@@ -192,6 +227,13 @@ export default {
     },
   },
   methods: {
+    selectMode() {
+      this.selecting = true
+    },
+    switchMode(payload) {
+      this.$store.dispatch('switchMode', payload)
+      this.selecting = false
+    },
     keyDown: function (event) {
       if (event.key === 'Enter') {
         this.$store.dispatch('submit')

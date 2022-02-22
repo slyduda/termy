@@ -81,10 +81,6 @@
                     <BaseCheckbox class="text-left mb-4" v-model:checked="link">Include Link</BaseCheckbox>
                     <button class="rounded-lg h-12 text-white text-xl font-semibold w-full" :class="[bgPrimary]" @click="copyScore()">Share</button>
                 </div>
-                <div v-if="shared" class="ml-2 flex-1">
-                    <p class="text-sm pb-4 pt-1 leading-snug">Up for a challenge?</p>
-                    <button class="rounded-lg h-12 text-white text-xl font-semibold w-full" :class="[bgSecondary]" @click="switchMode()">Termy{{plus ? "" : '+' }}</button>    
-                </div>
             </div>
             <button class="absolute top-4 right-4" @click="toggle">
                 <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
@@ -341,9 +337,6 @@ export default {
             this.$store.dispatch('admin/alert', 'Copied to Clipboard')
             this.shared = true
         },
-        switchMode() {
-           this.$store.dispatch('switchMode') 
-        },
         updateDailyDelta() {
             this.timeLeft = this.timeLeft - 1
             setTimeout( this.updateDailyDelta, 1000)
@@ -380,7 +373,7 @@ export default {
   animation: bounce-in 0.5s;
 }
 .bounce-leave-active {
-  animation: bounce-in 0.5s reverse;
+  animation: shrink-out 0.5s;
 }
 
 
@@ -394,5 +387,17 @@ export default {
   100% {
     transform: scale(1);
   }
+}
+
+@keyframes shrink-out {
+    0% {
+        transform: scale(1);
+    }
+    20% {
+        transform: scale(0);
+    }
+    100% {
+        transform: scale(0);
+    }
 }
 </style>

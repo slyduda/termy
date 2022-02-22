@@ -14,7 +14,7 @@
         ]"
         @click="handleClick($event, value)"
         >
-        {{ value }}
+        <slot>{{ value }}</slot>
     </button>
 </template>
 

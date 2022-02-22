@@ -24,11 +24,9 @@ export default {
     methods: {
         cont() {
             this.$store.dispatch('continue', 4)
-            this.$store.commit('playing', true)
         },
         quit() {
             this.$store.dispatch('fail')
-            this.$store.commit('playing', true)
         }
     },
     computed: {

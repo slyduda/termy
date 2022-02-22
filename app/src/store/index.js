@@ -86,8 +86,26 @@ const store = createStore({
         id: null,
         words: {
             5: "ORGAN",
-            6: "PILLOW"
+            6: "PILLOW",
+            mutate: {
+                pool: [
+                    ['A', 'I', 'R', 'E', 'S', 'M', 'Q', 'L'],
+                    ['C', 'M', 'P', 'H', 'O'],
+                    ['Q', 'K', 'G', 'N', 'I'],
+                    ['P', 'F', 'W', 'I'],
+                    ['K', 'C', 'U', 'R'],
+                    ['G', 'R', 'J']
+                ],
+                contraints: [
+                    [],
+                    [4],
+                    [3,4],
+                    [3,4],
+                    [2,3,4]
+                ]
+            }
         },
+        mode: 'classic',
         length: 5,
         solution: "ORGAN",
         guesses: [],
@@ -95,6 +113,7 @@ const store = createStore({
         
         current: '',
         ended: false,
+        lost: false,
         
         startTime: null,
         endTime: null,
@@ -102,7 +121,6 @@ const store = createStore({
 
         dailyReset: new Date(0),
         
-        playing: true,
         submitted: false,
         checked: false,
         
@@ -120,11 +138,19 @@ const store = createStore({
             context.commit('set', 5)
         },
 
-        switchMode(context) {
+        switchMode(context, payload) {
             // Used to switch modes between Termy and Termy+
             const inProgress = context.state.current.length > 0 || context.state.guesses.length > 0
             if ( !context.state.ended && inProgress ) return
-            context.commit('set', context.state.length === 5 ? 6 : 5)
+            if (payload === 'classic') {
+                context.commit('set', 5)
+            } else if (payload === 'plus') {
+                context.commit('set', 6)
+            } else if (payload === 'mutate') {
+                context.commit('set', 5)
+            } else {
+                alert('Not a valid mode')
+            }
         },
 
         reset(context) {
@@ -134,6 +160,7 @@ const store = createStore({
         checkedCaught(context) {
             context.commit('shake', false)
         },
+        
         submit (context) {
             if (context.state.current.length < context.state.length) {
                 context.commit('admin/alert', `Guess is not ${context.state.length} letters`)
@@ -161,12 +188,14 @@ const store = createStore({
                 context.dispatch('admin/alert', "You got it!")
                 context.commit('end')
                 context.dispatch('storage/load')
+                setTimeout(() => {
+                    context.commit('finish')
+                }, 2000)    
             } else if ( context.state.tries === context.state.guesses.length ) {
                 if ( context.state.tries >= 10 ) { 
                     context.dispatch('fail') 
                 } else { 
                     context.dispatch('admin/alert', "UH OH")
-                    context.commit('playing', false) 
                 }
             }
         },
@@ -177,7 +206,7 @@ const store = createStore({
 
         addLetter(context, payload) {
             if (context.state.current.length >= context.state.length ) return
-            if (context.getters.won) return
+            if (context.getters.won || context.state.ended) return // Does not include couple seconds before!!!
             context.commit('addLetter', payload)
         },
         removeLetter (context) {
@@ -187,6 +216,9 @@ const store = createStore({
             context.dispatch('admin/alert', context.state.solution)
             context.commit('end')
             context.dispatch('storage/load')
+            setTimeout(() => {
+                context.commit('finish')
+            }, 2000)    
         }
    },
    mutations: {
@@ -207,6 +239,7 @@ const store = createStore({
             state.words[6] = payload[6]
         },
         
+        
 
         set(state, payload) {
             state.length = payload
@@ -216,7 +249,6 @@ const store = createStore({
             state.ended = false
             state.startTime = null
             state.endTime = null
-            state.playing = true
             state.tries = 6
             state.submitted = false
 
@@ -229,7 +261,6 @@ const store = createStore({
                 if ( mode.endedOn ) state.endTime = new Date( mode.endedOn )
                 if (mode.won === null) {
                     if ( state.guesses.length >= 6 ) state.tries = 10
-                    if ( state.tries === state.guesses.length ) state.playing = false
                 } else {
                     console.log(game)
                     state.ended = true
@@ -244,7 +275,6 @@ const store = createStore({
             state.ended = false
             state.startTime = null
             state.endTime = null
-            state.playing = true
             state.tries = 6
             state.submitted = false
 
@@ -297,12 +327,12 @@ const store = createStore({
             localStorage.games = JSON.stringify(store)
         },
 
-        playing(state, payload) {
-            state.playing = payload
+        finish(state) {
+            state.ended = true
         },
 
         end(state) {
-            console.log('end')
+
             if (state.settings.timeChallenge) {
                 state.endTime = state.startTime + state.time
             } else {
@@ -315,7 +345,6 @@ const store = createStore({
             store[state.id][state.length].won = state.guesses[state.guesses.length - 1] === state.solution && state.guesses.length <= 6
 
             localStorage.games = JSON.stringify(store)
-            state.ended = true
 
             const game = store[state.id][state.length]
             const payload = {

@@ -1,6 +1,6 @@
 <template>
     <div
-        :style="{transform: `translate( ${explode.x}px, ${explode.y}px) rotate( ${explode.rot}deg)`}" 
+        :style="{transform: `translate( ${x}px, ${y}px) rotate( ${rot}deg)`}" 
         class="flex-grow flex-1 relative mr-1 last:mr-0 flex justify-center items-center font-bold dark:text-white" :class="[
         {'bg-white dark:bg-gray-900 border-solid border-2': status === ''},
         {'border-gray-200 dark:border-gray-600': !value && status === ''},
@@ -22,16 +22,18 @@ export default {
     data() {
         return {
             anim: false,
-            explode: {
-                x: 0,
-                y: 0,
-                rot: 0,
-            }
+            x: 0,
+            y: 0,
+            rot: 0,
+            
         }
     },
     computed: {
         won() {
             return this.$store.getters.won
+        },
+        ended() {
+            return this.$store.state.ended
         },
         colorBlind() {
             return this.$store.state.settings.colorBlind
@@ -69,14 +71,17 @@ export default {
         }
     },
     methods: {
-        startExplosion() {
+        reset() {
+            this.x = 0
+            this.y = 0
+            this.rot = 0
+        },
+        explode() {
             if (!this.animations || this.reducedMotion) return
-            this.explode = {
-                x: 0,
-                y: 0,
-                rot: 0
-            }
-
+            this.x = 0
+            this.y = 0
+            this.rot = 0
+            
             const VEL_Y_CIEL = 30;
             const VEL_Y_FLOOR = 10;
             const VEL_X_INTESITY = 20;
@@ -85,9 +90,9 @@ export default {
             const VEL_Y = ( Math.random() * (VEL_Y_CIEL - VEL_Y_FLOOR) + VEL_Y_FLOOR )
             const VEL_X = ( Math.random() - .5 ) * VEL_X_INTESITY
             
-            this.explosion(VEL_X, -VEL_Y, ROTATION, 1600)
+            this.move(VEL_X, -VEL_Y, ROTATION, 2400)
         },
-        explosion(x, y, rot, time) {
+        move(x, y, rot, time) {
             const gravity = 50
             const frames = 30
             const fps = frames/1000
@@ -96,17 +101,17 @@ export default {
             setTimeout(() => { 
                 const dif = gravity * fps
                 const newY = y + dif
-                that.explode = {
-                    x: that.explode.x + x,
-                    y: that.explode.y + newY,
-                    rot: that.explode.rot + rot
-                }
-                if (time > 0) that.explosion(x, newY, rot, time - frames)
+                
+                that.x = that.x + x,
+                that.y = that.y + newY,
+                that.rot = that.rot + rot
+
+                if (time > 0) that.move(x, newY, rot, time - frames)
             } , frames)
         }
     },
     mounted() {
-        if (this.won) this.startExplosion()
+        if (this.won && !this.ended) this.explode()
     },
     watch: {
         value(newVal, oldVal) {
@@ -119,7 +124,7 @@ export default {
             }
         },
         won() {
-            if (this.won === true) this.startExplosion()
+            if (this.won && !this.ended) this.explode()
         }
     }
 }
