@@ -3,11 +3,15 @@ export default {
     namespaced: true,
     state: {
         alert: "",
+        score: false,
     },
     actions: {
         alert(context, payload) {
             context.commit('alert', payload)
         },
+        score(context) {
+            context.commit('score')
+        }
     },
     mutations: {
         alert(state, payload) {
@@ -16,5 +20,8 @@ export default {
                 state.alert = ""
             } , 4000)
         },
+        score(state) {
+            state.score = !state.score
+        }
     },
 }

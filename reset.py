@@ -6,16 +6,18 @@ from store.database import Word, db
 WORDS = {}
 ID = 0
 
-db.bind('sqlite', filename='database.sqlite', create_db=True)
+dir_path = os.path.dirname(os.path.realpath(__file__))
+
+db.bind('sqlite', filename=dir_path+'/database.sqlite', create_db=True)
 db.generate_mapping(create_tables=True)
 
 def daily_reset():
     global WORDS, ID
     data = None
     words = None
-    with open('words.txt', 'r') as fin:
+    with open(dir_path+'/words.txt', 'r') as fin:
         data = fin.read().splitlines(True)
-    with open('words.txt', 'w') as fout:
+    with open(dir_path+'/words.txt', 'w') as fout:
         words = data[0]
         fout.writelines(data[1:])
     words = words.split(',')

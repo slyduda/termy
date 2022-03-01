@@ -16,9 +16,15 @@ import { faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 import { faBackspace } from "@fortawesome/free-solid-svg-icons";
 import { faFistRaised } from "@fortawesome/free-solid-svg-icons";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faLock } from "@fortawesome/free-solid-svg-icons";
+import { faHeart } from "@fortawesome/free-solid-svg-icons";
+import { faTrashCanArrowUp, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
+library.add(faHeart)
+library.add(faTrashCan, faTrashCanArrowUp)
 library.add(faPlus)
+library.add(faLock)
 library.add(faGear)
 library.add(faChartPie)
 library.add(faCircleExclamation)

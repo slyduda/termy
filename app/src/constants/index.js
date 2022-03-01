@@ -1,3 +1,32 @@
+const ALPHABET = [
+  'Q',
+  'W',
+  'E',
+  'R',
+  'T',
+  'Y',
+  'U',
+  'I',
+  'O',
+  'P',
+  'A',
+  'S',
+  'D',
+  'F',
+  'G',
+  'H',
+  'J',
+  'K',
+  'L',
+  'Z',
+  'X',
+  'C',
+  'V',
+  'B',
+  'N',
+  'M'
+]
+
 const LIST5 = [
   'aahed',
   'aalii',
@@ -35121,4 +35150,4 @@ const LIST6 = [
   "ZYTHUM"
 ]
 
-export { LIST5, LIST6 }
+export { LIST5, LIST6, ALPHABET }

@@ -1,52 +1,44 @@
 <template>
-    <div v-if="visible" class="w-full h-full absolute z-50 flex justify-center items-center" >
-        <div class="w-full h-full bg-gray-900 opacity-50 absolute">
+    <div class="w-full h-full absolute z-50 flex justify-center items-center pointer-events-none" >
+        <Transition :name="reducedMotion ? 'none' : 'fade'">
+            <div v-if="visible" class="w-full h-full bg-gray-900 opacity-50 absolute pointer-events-auto">
+            </div>
+        </Transition>
+        <Transition :name="reducedMotion ? 'none' : 'bounce'">
+            <div v-if="visible" class="w-full max-w-xs mx-4 dark:text-white p-6 text-sm relative bg-white relative rounded-lg dark:bg-gray-800 pointer-events-auto">
+                <div class="mb-4">
+                    <h4 class="text-lg font-semibold mb-2 text-left flex items-center">
+                        Updates                
+                    </h4>
+                    
+                    <ul class="text-left list-disc list-inside">
+                        <li>Fixed Icons</li>
+                        <li>Removed 'Time Challenge' setting temporarily</li>
+                        <li>Removed Solidarity Modal temporarily</li>
+                        <li>Removed win animation temporarily</li>
+                        <li>Animation fixes</li>
+                    </ul>
+                </div>
+            
+                <div class="">    
+                    <h4 class="text-lg font-semibold mb-2 text-left flex items-center">
+                        Up Next                
+                    </h4>
+                    
+                    <ul class="text-left list-disc list-inside">
+                        <li>Termutate is almost ready. Further balancing needs to be done for it to be fun!</li>
+                        <li>Accessibility fixes</li>
+                        <li>Color fixes</li>
+                    </ul>
+                </div>
 
-        </div>
-        <div class="w-full max-w-xs mx-4 dark:text-white p-6 text-sm relative bg-white relative rounded-lg dark:bg-gray-800">
-            <div class="mb-4">
-                <h4 class="text-lg font-semibold mb-2 text-left flex items-center">
-                    Issues                
-                </h4>
-                
-                <ul class="text-left">
-                    <li>On 02/18/2022 an invalid word (FRIDAY) was loaded for Termy+. Anyone who played from the time 4:00 PM PST - 4:17 PM PST may have been affected. If you think your score was ruined because of this issue, please reach out. Settings > Feedback > Twitter.</li>
-                </ul>
+                <button class="absolute top-4 right-4" @click="toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+                        <path  class="fill-gray-900 dark:fill-white"  d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path>
+                    </svg>
+                </button>
             </div>
-            <div class="mb-4">
-                <h4 class="text-lg font-semibold mb-2 text-left flex items-center">
-                    Updates                
-                </h4>
-                
-                <ul class="text-left list-disc list-inside">
-                    <li>Added worker information</li>
-                    <li>Fixed 'Classic Colors' setting</li>
-                    <li>Fixed 'Dark Theme' setting</li>
-                    <li>Fixed 'Letter Helper'</li>
-                    <li>Added 'Reduced Motion' setting</li>
-                    <li>More animations</li>
-                </ul>
-            </div>
-        
-            <div class="">    
-                <h4 class="text-lg font-semibold mb-2 text-left flex items-center">
-                    Up Next                
-                </h4>
-                
-                <ul class="text-left list-disc list-inside">
-                    <li>Termyutation mode</li>
-                    <li>Even more animations</li>
-                    <li>Information architecture overhaul</li>
-                    <li>Color fixes</li>
-                </ul>
-            </div>
-
-            <button class="absolute top-4 right-4" @click="toggle">
-                <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
-                    <path  class="fill-gray-900 dark:fill-white"  d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path>
-                </svg>
-            </button>
-        </div>
+        </Transition>
     </div>
 </template>
 

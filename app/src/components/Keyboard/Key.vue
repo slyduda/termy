@@ -5,16 +5,20 @@
             height: '58px' 
             }"
             style="touch-action: manipulation"
-        class="flex items-center justify-center rounded mx-0.5 text-xs font-bold cursor-pointer select-none dark:text-white"
+        class="relative flex items-center justify-center rounded mx-0.5 text-xs font-bold cursor-pointer select-none dark:text-white"
         :class="[
             {'bg-gray-200 dark:bg-gray-500 hover:bg-gray-300 active:bg-gray-400': !status},
             { 'bg-gray-400 dark:bg-gray-700 bg-gray-400 text-white': status === 'absent' },
+            { 'bg-gray-400 dark:bg-gray-700 bg-gray-400 text-grey-500 dark:text-gray-800': status === 'disabled' },
             {[`${bgPrimary} hover:${bgPrimaryHover} active:${bgPrimaryActive} text-white`]: status === 'correct'},
             {[`${bgSecondary} hover:${bgSecondaryHover} active:${bgSecondaryActive} text-white`]: status === 'present' }
         ]"
         @click="handleClick($event, value)"
         >
-        <slot>{{ value }}</slot>
+        <slot>
+            {{ value }}
+            <div v-if="count && count > 1" class="text-xs absolute right-0.5 top-0.5">{{ count }}</div>
+        </slot>
     </button>
 </template>
 
@@ -24,6 +28,10 @@ export default {
         width: {
             type: Number,
             default: 40
+        },
+        count: {
+            type: Number,
+            default: 0,
         },
         value: {
             type: String,
@@ -35,6 +43,9 @@ export default {
         }
     },
     computed: {
+        mode() {
+            return this.$store.state.game.mode
+        },
         colorBlind() {
             return this.$store.state.settings.colorBlind
         },
@@ -59,12 +70,14 @@ export default {
     },
     methods: {
         handleClick(event, val) {
-            if (val === 'DELETE') { 
-                this.$store.dispatch('removeLetter')
+            if (val === 'UNDO') {
+                this.$store.dispatch( 'game/' + this.mode + '/undoGuess')
+            } else if (val === 'DELETE') { 
+                this.$store.dispatch( 'game/' + this.mode + '/removeLetter')
             } else if (val === 'ENTER') {
-                this.$store.dispatch('submit')
+                this.$store.dispatch('game/submit')
             } else {
-                this.$store.dispatch('addLetter', val)
+                this.$store.dispatch( 'game/' + this.mode + '/addLetter', val)
             }
         }
     }

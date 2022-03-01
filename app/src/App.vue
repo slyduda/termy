@@ -4,7 +4,7 @@
     <AboutModal @toggle="about = !about" :visible="about"/>
     <SettingModal @toggle="setting = !setting" :visible="setting"/>
     <ScoreModal @toggle="score = !score" :visible="score"/>
-    <ContinueModal :visible="$store.state.tries === $store.state.guesses.length && !$store.state.ended && $store.state.guesses.length < 10" />
+
     <InfoModal @toggle="info = !info" :visible="info" />
     <UpdateModal @toggle="update = !update" :visible="update" />
     <div class="w-full absolute mt-3 flex justify-center">
@@ -17,12 +17,14 @@
                 <button @click="about = !about" class="p-2 flex justify-center items-center">
                   <font-awesome-icon icon="info-circle" class="text-2xl" :class="['text-gray-900 dark:text-gray-100']"></font-awesome-icon>
                 </button>
-                <button v-if="version" class="p-2 flex justify-center items-center" @click="update = !update; $store.dispatch('storage/newVersion', false);">
+                <button v-if="newVersion" class="p-2 flex justify-center items-center" @click="update = !update; $store.dispatch('storage/newVersion', false);">
                   <font-awesome-icon icon="circle-exclamation" class="text-2xl" :class="['text-gray-900 dark:text-gray-100']"></font-awesome-icon>
                 </button>
+                <!--
                 <button v-else class="p-2 flex justify-center items-center" @click="info = !info">
                   <font-awesome-icon icon="fist-raised" class="text-2xl" :class="['text-gray-900 dark:text-gray-100']"></font-awesome-icon>
                 </button>
+                -->
                 <div v-if="timeChallenge" class="ml-4 text-gray-400 dark:text-gray-600 font-bold">{{ fancyTmeRemaining }}</div>
             </div>
             <div class="relative">
@@ -32,18 +34,18 @@
               </button>
               <button @click="selectMode" v-else-if="mode === 'plus'" class="text-4xl grow font-bold dark:text-white flex items-center justify-center">
                 <h1 class="tracking-widest">TERMY</h1>
-                <div class="font-extrabold leading-none" :class="[textPrimary]" style="font-size: 2.5rem;">+</div>
+                <div class="font-extrabold leading-none mr-1" :class="[textPrimary]" style="font-size: 2.5rem;">+</div>
                 <font-awesome-icon class="text-xl ml-1" icon="caret-down" />  
               </button>
               <button @click="selectMode" v-else class="text-4xl grow font-bold dark:text-white flex items-center justify-center">
-                <h1 class="tracking-widest text-3xl flex">TERM<p class="tracking-normal" :class="[textPrimary]">UTATE</p></h1>
+                <h1 class="tracking-widest text-3xl flex">TERM<p class="tracking-normal mr-1" :class="[textPrimary]">UTATE</p></h1>
                 <font-awesome-icon class="text-xl ml-1" icon="caret-down" />
               </button>
               <p class="hidden absolute text-xs -right-8 bottom-0 text-gray-400 dark:text-gray-600 font-bold">BETA</p>
             
             </div>
             <div class="flex">
-                <button class="p-2 flex justify-center items-center" @click="score = !score">
+                <button class="p-2 flex justify-center items-center" @click="$store.dispatch('admin/score')">
                     <font-awesome-icon icon="chart-pie" class="text-2xl" :class="['text-gray-900 dark:text-gray-100']"></font-awesome-icon>
                 </button>
                 <button class="p-2 flex justify-center items-center" @click="setting = !setting">
@@ -61,13 +63,13 @@
     <Transition>
       <div v-if="selecting" class="absolute w-full h-full z-50 pointer-events-none">
         <div class="z-50 mx-auto max-w-xs w-full bg-white dark:bg-gray-800 dark:text-white p-4 rounded-lg mt-14 pointer-events-auto">
-          <button @click="switchMode('classic')" class="mb-4 text-left text-sm w-full">
+          <button @click="changeMode('classic')" class="mb-4 text-left text-sm w-full">
             <div class="flex items-center text-2xl font-bold tracking-widest">
               TERMY
             </div>
             The 5-letter guessing you know and love.
           </button>
-          <button @click="switchMode('plus')" class="mb-4 text-left text-sm w-full">
+          <button @click="changeMode('plus')" class="mb- text-left text-sm w-full">
             <div class="flex text-2xl font-bold tracking-widest">
               TERMY
               <div class="font-extrabold leading-none text-3xl" :class="[textPrimary]">+</div>
@@ -77,12 +79,26 @@
             </div>
             Regular Termy but with a 6-letter twist.
           </button>
-          <button @click="switchMode('mutate')" class="text-left text-sm w-full">
-            <div class="flex items-center text-2xl font-bold tracking-widest">
-              TERM<p class="tracking-normal" :class="[textPrimary]">UTATE</p>
+          <!--
+          <button @click="changeMode('mutate')" class="mb-4 text-left text-sm w-full">
+            <div class="flex items-center text-2xl font-bold tracking-widest relative">
+              <div class="flex items-center relative">
+                TERM<p class="tracking-normal" :class="[textPrimary]">UTATE</p>
+                <p class="text-xs font-bold tracking-normal absolute -right-9 bottom-0.5 text-gray-400">BETA</p>
+              </div>
             </div>
             Make words with the letters you're given.
           </button>
+          <button @click="changeMode('stage')" class="text-left text-sm w-full">
+            <div class="flex items-center text-2xl font-bold tracking-widest relative">
+              <div class="flex items-center relative">
+                TERM<p class="tracking-normal" :class="[textPrimary]">UTATE</p>
+                <p class="text-xs font-bold tracking-normal absolute -right-14 bottom-0.5 text-gray-400">STAGING</p>
+              </div>
+            </div>
+            Tools for creating Termutate puzzles.
+          </button>
+          -->
         </div>
       </div>
     </Transition>
@@ -91,7 +107,9 @@
         :style="{width: `${100 - (percentRemaining*100) }%` }">
       </div>
     </div>
-    <Grid class="flex-shrink flex-grow" :key="length"/> 
+    <ClassicApp class="flex-shrink flex-grow flex items-center" v-if="mode === 'classic'"/>
+    <PlusApp class="flex-shrink flex-grow flex items-center" v-if="mode === 'plus'"/>
+    <MutateApp class="flex-shrink flex-grow flex items-center" v-if="mode === 'mutate' || mode === 'stage'"/>
     <Keyboard />
   </div>
 </template>
@@ -102,10 +120,12 @@ import UpdateModal from './components/Modal/UpdateModal.vue'
 import InfoModal from './components/Modal/InfoModal.vue'
 import ScoreModal from './components/Modal/ScoreModal.vue'
 import SettingModal from './components/Modal/SettingModal.vue'
-import ContinueModal from './components/Modal/ContinueModal.vue'
 import AboutModal from './components/Modal/AboutModal.vue'
-import Grid from './components/Grid/Grid.vue'
-import Keyboard from './components/Keyboard/Keyboard.vue'
+// import Grid from './components/Grid/Grid.vue'
+import ClassicApp from './components/app/ClassicApp'
+import PlusApp from './components/app/PlusApp'
+import MutateApp from './components/app/MutateApp'
+import Keyboard from './components/Keyboard/MutateKeyboard'
 
 function fancyTimeFormat(duration)
 {   
@@ -126,53 +146,25 @@ function fancyTimeFormat(duration)
     return ret;
 }
 
-const ALPHABET = [
-    'Q',
-    'W',
-    'E',
-    'R',
-    'T',
-    'Y',
-    'U',
-    'I',
-    'O',
-    'P',
-    'A',
-    'S',
-    'D',
-    'F',
-    'G',
-    'H',
-    'J',
-    'K',
-    'L',
-    'Z',
-    'X',
-    'C',
-    'V',
-    'B',
-    'N',
-    'M'
-]
-
 export default {
   name: 'App',
   components: {
-    Grid,
+    // Grid,
+    ClassicApp,
+    MutateApp,
+    PlusApp,
     Keyboard,
     AboutModal,
     SettingModal,
     ScoreModal,
     InfoModal,
     Alert,
-    ContinueModal,
     UpdateModal
   },
   data() {
     return {
       about: false,
       setting: false,
-      score: false,
       update: false,
       info: false,
       timeRemaining: null,
@@ -181,8 +173,7 @@ export default {
   },
   computed: {
     mode() {
-      if (this.$store.state.mode === 'termutation') return 'mutation'
-      return this.length === 6 ? 'plus' : 'classic' 
+      return this.$store.state.game.mode
     },
     colorBlind() {
         return this.$store.state.settings.colorBlind;
@@ -214,8 +205,11 @@ export default {
     end() {
         return this.$store.state.ended
     },
-    version() {
-      return this.$store.state.storage.version
+    score() {
+      return this.$store.state.admin.score
+    },
+    newVersion() {
+      return this.$store.state.storage.newVersion
     },
     percentRemaining() {
       if (this.timeRemaining) return this.timeRemaining/this.time
@@ -230,19 +224,11 @@ export default {
     selectMode() {
       this.selecting = true
     },
-    switchMode(payload) {
-      this.$store.dispatch('switchMode', payload)
+    changeMode(payload) {
+      this.$store.dispatch('game/change', payload)
       this.selecting = false
     },
-    keyDown: function (event) {
-      if (event.key === 'Enter') {
-        this.$store.dispatch('submit')
-      } else if (event.key === 'Backspace') {
-        this.$store.dispatch('removeLetter')
-      }  else if (ALPHABET.indexOf(event.key.toUpperCase()) >= 0) {
-        this.$store.dispatch('addLetter', event.key.toUpperCase())
-      }  
-    },
+    /*
     startTimer() {
       const d = new Date()
       this.timeRemaining = this.endTime - d.getTime()
@@ -254,31 +240,15 @@ export default {
           that.$store.dispatch('fail')
         }
       }, 100)
-    }
+    }*/
   },
   mounted: function () {
-    window.addEventListener('keydown', this.keyDown)
-    const five = document.getElementById('f_elem').value
-    const six = document.getElementById('s_elem').value
-    const p = document.getElementById('p_elem').value
-    const id = document.getElementById('i_elem').value
-    
-    const payload = {
-      p,
-      id,
-      5: five,
-      6: six
-    }
-
-    this.$store.dispatch('load', payload)
+    this.$store.dispatch('init')
 
     if (!localStorage.instructions) this.about = true
     localStorage.instructions = true
   },
 
-  unmounted: function () {
-    window.removeEventListener('keydown', this.keyDown)
-  },
 
   watch: {
     end() {
@@ -287,7 +257,7 @@ export default {
       }
     },
     startTime() {
-      if (!this.timeRemaining && this.timeChallenge) this.startTimer()
+      // if (!this.timeRemaining && this.timeChallenge) this.startTimer()
     }
   }
 }

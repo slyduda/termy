@@ -5,6 +5,7 @@
         {'bg-white dark:bg-gray-900 border-solid border-2': status === ''},
         {'border-gray-200 dark:border-gray-600': !value && status === ''},
         {'border-gray-400 dark:border-gray-400': value && status === ''},
+        {'rounded-t-xl': constraint},
         {'bg-gray-400 dark:bg-gray-700 border-gray-400 dark:border-gray-700 text-white': status === 0},
         {[`${bgPrimary} text-white`]: status === 2},
         {[`${bgSecondary} text-white`]: status === 1},
@@ -13,6 +14,7 @@
         {'text-3xl': !small},
     ]">
         <div v-if="hint && !value" class="w-full h-full opacity-40 flex items-center justify-center leading-none"> {{ hint.toUpperCase()}} </div>
+        <font-awesome-icon icon="lock" v-if="constraint && status === ''" class="absolute right-1 top-1 text-xs text-gray-200 dark:text-gray-600"></font-awesome-icon>
         {{ value.toUpperCase() }}
     </div>
 </template>
@@ -68,6 +70,10 @@ export default {
         animations: {
             type: Boolean,
             default: true,
+        },
+        constraint: {
+            type: Boolean,
+            default: false,
         }
     },
     methods: {

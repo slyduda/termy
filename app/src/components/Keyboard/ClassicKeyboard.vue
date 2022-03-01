@@ -52,20 +52,49 @@
 
 <script>
 import Key from './Key.vue';
+import { ALPHABET } from '../../constants'
 
 export default {
     components: {
         Key
     },
     computed: {
+        mode() {
+            return this.$store.state.game.mode
+        },
         charStatuses() {
-            return this.$store.getters.charStatuses
-        }
+            return this.$store.getters[`game/${this.mode}/charStatuses`]
+        },
+
     },
+    mounted() {
+        window.addEventListener('keydown', this.keyDown)
+    },
+
+    unmounted: function () {
+        window.removeEventListener('keydown', this.keyDown)
+    },
+
     methods: {
         nothing() {
             return
-        }
+        },
+        keyDown: function (event) {
+            if (event.key === 'Enter') {
+                this.$store.dispatch('game/submit')
+            } else if (event.key === 'Backspace') {
+                this.$store.dispatch('game/removeLetter')
+            }  else if (ALPHABET.indexOf(event.key.toUpperCase()) >= 0) {
+                this.$store.dispatch('game/addLetter', event.key.toUpperCase())
+            }
+
+
+            if (this.won) {
+                setTimeout(function() {
+                    this.$store.dispatch('admin/score')
+                }, 2000)
+            }
+        },
     }
 }
 </script>

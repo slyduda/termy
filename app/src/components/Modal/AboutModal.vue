@@ -1,5 +1,7 @@
 <template>
-    <div v-if="visible" class="w-full h-full overflow-hidden bg-gray-50 absolute px-4 z-50 dark:bg-gray-900 flex justify-center" >
+    <Transition :name="reducedMotion ? 'none' : 'slide'">
+    
+        <div v-if="visible" class="w-full h-full bg-gray-50 absolute px-4 z-50 dark:bg-gray-900 flex justify-center" >
         <div class="w-full max-w-lg dark:text-white text-sm relative">
             <div class="border-b border-solid border-gray-300 dark:border-gray-700 py-4 text-left">
                 <h1 class="font-semibold mb-2 text-center">HOW TO PLAY</h1>
@@ -44,6 +46,7 @@
             </button>
         </div>
     </div>
+    </Transition>
 </template>
 
 <script>
