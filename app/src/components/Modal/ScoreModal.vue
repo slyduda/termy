@@ -207,7 +207,9 @@ export default {
             let index = this.id
             const currentPuzzles = this.games[this.id]
             if (currentPuzzles[this.length]) {
-                if (currentPuzzles[this.length].won === false) { 
+                if ( this.freebies.indexOf(this.id) >= 0 ) {
+                    n += 1
+                } else if (currentPuzzles[this.length].won === false) { 
                     return 0
                 } else if (currentPuzzles[this.length].won === true) {
                     n += 1
