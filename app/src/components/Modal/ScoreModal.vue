@@ -199,7 +199,7 @@ export default {
             return 0
         },
         freebies() {
-            return [34]
+            return [34, '34']
         },
         currentStreak() {
             if (!this.games) return
