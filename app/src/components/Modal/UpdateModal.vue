@@ -7,16 +7,13 @@
         <Transition :name="reducedMotion ? 'none' : 'bounce'">
             <div v-if="visible" class="w-full max-w-xs mx-4 dark:text-white p-6 text-sm relative bg-white relative rounded-lg dark:bg-gray-800 pointer-events-auto">
                 <div class="mb-4">
+                    
                     <h4 class="text-lg font-semibold mb-2 text-left flex items-center">
-                        Updates                
+                        OOPS!!!                
                     </h4>
                     
                     <ul class="text-left list-disc list-inside">
-                        <li>Fixed Icons</li>
-                        <li>Removed 'Time Challenge' setting temporarily</li>
-                        <li>Removed Solidarity Modal temporarily</li>
-                        <li>Removed win animation temporarily</li>
-                        <li>Animation fixes</li>
+                        <li><strong>Noctus</strong> is not a word! Termy+ 34 was fixed and changed to a different word at 6:05PM PST and will be marked as a freebie to preserve everyones max and current streaks!</li>
                     </ul>
                 </div>
             

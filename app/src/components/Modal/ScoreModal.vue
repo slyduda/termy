@@ -198,6 +198,9 @@ export default {
         playedCount() {
             return 0
         },
+        freebies() {
+            return [34]
+        },
         currentStreak() {
             if (!this.games) return
             let n = 0
@@ -213,6 +216,11 @@ export default {
             for (let i = index - 1; i > 0; i--) {
                 const prevPuzzles = this.games[i]
                 if (!prevPuzzles) break
+                // Give the player a freebie
+                if (this.freebies.indexOf(i) >= 0) {
+                    n += 1
+                    continue
+                }
                 if (!prevPuzzles[this.length]) break
                 if (prevPuzzles[this.length].won === false || prevPuzzles[this.length].won === null) break
                 if (prevPuzzles[this.length].won === true) n += 1
@@ -230,6 +238,8 @@ export default {
                     currentStreak = 0
                 } else if (!puzzles[this.length]) {
                     currentStreak = 0
+                } else if (this.freebies.indexOf(i) >= 0) {
+                    currentStreak += 1
                 } else if (puzzles[this.length].won === false || puzzles[this.length].won === null) {
                     currentStreak = 0
                 } else if (puzzles[this.length].won === true) {

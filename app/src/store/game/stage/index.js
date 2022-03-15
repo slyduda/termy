@@ -290,7 +290,7 @@ const store = {
                     const result = test(letters, word)
                     if (result[0]) dict[word] = {
                         permutations: {},
-                        leftovers: result[1]
+                        leftovers: result[1].join('').toUpperCase()
                     }
                 }
             }

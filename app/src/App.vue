@@ -17,8 +17,8 @@
                 <button @click="about = !about" class="p-2 flex justify-center items-center">
                   <font-awesome-icon icon="info-circle" class="text-2xl" :class="['text-gray-900 dark:text-gray-100']"></font-awesome-icon>
                 </button>
-                <button v-if="newVersion" class="p-2 flex justify-center items-center" @click="update = !update; $store.dispatch('storage/newVersion', false);">
-                  <font-awesome-icon icon="circle-exclamation" class="text-2xl" :class="['text-gray-900 dark:text-gray-100']"></font-awesome-icon>
+                <button v-if="newVersion" class="p-2 flex justify-center items-center " @click="update = !update; $store.dispatch('storage/newVersion', false);">
+                  <font-awesome-icon icon="circle-exclamation" class="text-2xl" :class="['text-red-500']"></font-awesome-icon>
                 </button>
                 <!--
                 <button v-else class="p-2 flex justify-center items-center" @click="info = !info">
@@ -32,6 +32,7 @@
                 <h1 class="tracking-widest">TERMY</h1>
                 <font-awesome-icon class="text-xl ml-1" icon="caret-down" />
               </button>
+        
               <button @click="selectMode" v-else-if="mode === 'plus'" class="text-4xl grow font-bold dark:text-white flex items-center justify-center">
                 <h1 class="tracking-widest">TERMY</h1>
                 <div class="font-extrabold leading-none mr-1" :class="[textPrimary]" style="font-size: 2.5rem;">+</div>
@@ -69,7 +70,7 @@
             </div>
             The 5-letter guessing you know and love.
           </button>
-          <button @click="changeMode('plus')" class="mb- text-left text-sm w-full">
+          <button @click="changeMode('plus')" class=" text-left text-sm w-full">
             <div class="flex text-2xl font-bold tracking-widest">
               TERMY
               <div class="font-extrabold leading-none text-3xl" :class="[textPrimary]">+</div>
@@ -79,7 +80,7 @@
             </div>
             Regular Termy but with a 6-letter twist.
           </button>
-          <!--
+                    <!--
           <button @click="changeMode('mutate')" class="mb-4 text-left text-sm w-full">
             <div class="flex items-center text-2xl font-bold tracking-widest relative">
               <div class="flex items-center relative">
