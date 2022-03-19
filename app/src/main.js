@@ -35,4 +35,7 @@ library.add(faInfoCircle)
 library.add(faBackspace)
 library.add(faFistRaised);
 
+console.log(process.env)
+
 createApp(App).component("font-awesome-icon", FontAwesomeIcon).use(store).use(VueAxios, axios).mount('#app')
+axios.defaults.baseURL = process.env.VUE_APP_API_URL

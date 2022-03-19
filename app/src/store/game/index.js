@@ -61,7 +61,7 @@ const store = {
             if (classic !== "{@ five @}") context.commit('puzzle', { mode: 'classic', solution: classic } )
             if (plus !== "{@ six @}") context.commit('puzzle', { mode: 'plus', solution: plus } )
 
-            context.dispatch('storage/load')
+            context.dispatch('storage/init')
             context.dispatch('storage/visit', context.state.id)
 
             context.dispatch('classic/set', { id: context.state.id, solution: context.state.puzzles.classic })

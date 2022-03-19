@@ -7,6 +7,7 @@ class Config():
 
 class LocalConfig(Config):
     SECRET_KEY = 'change-this-in-prod'
+    STATIC_FOLDER = 'app/dist/static'
     TYPE = 'local'
     ENV = 'development'
     DEBUG = True
@@ -14,6 +15,7 @@ class LocalConfig(Config):
 
 class ProductionConfig(Config):
     SECRET_KEY = os.environ.get('SECRET_KEY')
+    STATIC_FOLDER = 'app/dist/static'
     TYPE = 'prod'
     ENV = 'production'
     DEBUG = False

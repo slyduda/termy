@@ -1,0 +1,7 @@
+Normalize and Fix Local Storage
+- puzzleId non-existent in older versions
+- puzzleId is of string type and should be a number type
+- mode is of null type on <20
+- change key for all puzzles from 5 and 6 to "classic" and "plus"
+- startedOn times are sometimes of Date string type due to unkown bug (recreated by refreshing an active puzzle)
+- id, hash, and hashVersion keys do not exist for all non submitted games

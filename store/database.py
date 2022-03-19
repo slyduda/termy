@@ -1,4 +1,4 @@
-from pony.orm import Database, db_session, commit, rollback, exists
+from pony.orm import Database, db_session, commit, rollback, exists, select
 from pony.orm import PrimaryKey, Set, Optional, Required
 
 import uuid
@@ -37,3 +37,30 @@ class Word(db.Entity):
     mode = Required(str)
 
     PrimaryKey(id, mode)
+
+@db_session
+def waterfall_submit(games):
+    '''
+
+    '''
+    posted_games = []
+    for game in games:
+        is_game = select(g for g in Game if g.mode == game['mode'] and g.session == uuid.UUID(game['session']) and g.puzzle == game['puzzleId']).exists()
+        if is_game:
+            continue
+
+        g = Game(
+            puzzle=game["puzzleId"],
+            session=uuid.UUID(game["session"]), 
+            guesses=','.join(game["guesses"]), 
+            started_on=datetime.utcfromtimestamp(game["startedOn"]/1000), 
+            ended_on=datetime.utcfromtimestamp(game["endedOn"]/1000),
+            length=game["length"], 
+            mode=game["mode"], 
+            won=game["won"]
+        )
+
+        posted_game = g.to_dict()
+        posted_games.append(posted_game)
+
+    return posted_games

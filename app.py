@@ -14,11 +14,12 @@ from quart_rate_limiter import RateLimiter, rate_limit
 
 from pony.orm import db_session, desc
 
-from store.database import Game, Word, db
+from constants.rates import CatchupRate, SubmitRate, StaticRate, IndexRate
+from store.database import Game, Word, db, waterfall_submit
 
 from config import LocalConfig, ProductionConfig
 
-app = Quart(__name__)
+app = Quart(__name__, template_folder='app/dist')
 rate_limiter = RateLimiter(app)
 
 
@@ -41,6 +42,8 @@ jinja_options.update(dict(
     variable_end_string='@}'
 ))
 app.jinja_options = jinja_options
+app.static_url_path=app.config.get('STATIC_FOLDER')
+app.static_folder=str(app.root_path) + '/' + app.static_url_path
 
 
 if app.config['TYPE'] == 'local':
@@ -48,7 +51,7 @@ if app.config['TYPE'] == 'local':
                allow_headers=["content-type", "x-csrf-token"],
                allow_credentials=True,
                allow_methods=["POST", "PUT", "DELETE", "GET"],
-               allow_origin=["http://192.168.1.4:5000"]
+               allow_origin=["http://192.168.1.5:3000"]
                )
 
 if app.config['TYPE'] == 'prod':
@@ -74,14 +77,14 @@ ID = 0
 @app.route('/browserconfig.xml')
 @app.route('/robots.txt')
 @app.route('/sitemap.xml')
-@rate_limit(5, timedelta(minutes=5))
+@rate_limit(*StaticRate)
 async def static_from_root():
     return await send_from_directory(app.static_folder, request.path[1:])
 
 
 @app.route('/')
-@rate_limit(5, timedelta(minutes=5))
-async def catch_all():
+@rate_limit(*IndexRate)
+async def index():
     global WORDS, ID, RESET_DATETIME
     delta = round((RESET_DATETIME - datetime.now()).total_seconds())
     
@@ -92,14 +95,25 @@ async def catch_all():
     return await render_template("index.html", five=WORDS['classic'], six=WORDS['plus'], game_id=ID, payload=delta)
 
 
-async def hash_game(game):
-    g = game.to_dict()
+@app.route('/staging')
+@rate_limit(*IndexRate)
+async def staging():
+    global WORDS, ID, RESET_DATETIME
+    delta = round((RESET_DATETIME - datetime.now()).total_seconds())
+    
+    # If the daily_reset time has passed load the new word expecting the chron job has finished
+    if (delta < 0):
+        delta = await load_words() # get the new delta if it has been updated
+
+    return await render_template("staging.html", five=WORDS['classic'], six=WORDS['plus'], game_id=ID, payload=delta)
+
+
+async def hash_game(g):
     g['id'] = str(g['id'])
     g['session'] = str(g['session'])
     g['ended_on'] = str(g['ended_on'])
     g['started_on'] = str(g['started_on'])
     payload = json.dumps(g)
-    print(payload)
     salted_payload = payload + app.config.get('HASH_SALT')
     h = hashlib.md5(salted_payload.encode())
     hash = h.hexdigest()
@@ -107,12 +121,14 @@ async def hash_game(game):
 
 
 @app.route('/submit', methods=['POST'])
-@rate_limit(5, timedelta(minutes=30))
+@rate_limit(*SubmitRate)
 async def submit():
     global ID
     data = await request.get_json()
 
     id = data.get('id')
+    if id:
+        id = int(id)
     session = data.get('session')
     if session:
         session = uuid.UUID(session)
@@ -147,9 +163,53 @@ async def submit():
         )
 
     if game:
-        h = await hash_game(game)
-        return jsonify({'id': game.id, 'hash': h, 'hash_version': '1.0'}), 200
+        g = game.to_dict()
+        h = await hash_game(g)
+        return jsonify({'id': g['id'], 'hash': h, 'hash_version': '1.0'}), 200
     return jsonify({'error': 'Error saving game.'}), 400
+
+@app.route('/catchup', methods=['POST'])
+@rate_limit(*CatchupRate)
+async def catchup():
+    global ID
+    data = await request.get_json()
+
+    session = data.get('session')
+    if session:
+        session = uuid.UUID(session)
+    games = data.get('games')
+    
+    required = [session, games]
+    if any(x is None for x in required):
+        return jsonify({'error': 'Missing required fields.'}), 400
+    
+    valid_games = []
+    for game in games:
+        id = game.get('puzzleId')
+        guesses = game.get('guesses')
+        started_on = game.get('startedOn')
+        if started_on:
+            started_on = datetime.utcfromtimestamp(started_on/1000)
+        ended_on = game.get('endedOn')
+        if ended_on:
+            ended_on = datetime.utcfromtimestamp(ended_on/1000)
+        length = game.get('length')
+        mode = game.get('mode')
+        won = game.get('won')
+        required = [id, guesses, started_on, ended_on, length, mode, won]
+        if any(x is None for x in required):
+            continue
+        valid_games.append(game)
+
+    results = waterfall_submit(valid_games)
+    if results:
+        hashed_results = []
+        for result in results:
+            h = await hash_game(result)
+            hashed_results.append({**result ,'id': result['id'], 'hash': h, 'hash_version': '1.0'})
+        return jsonify({"games": hashed_results}), 200
+
+    return jsonify({'games': []}), 200 # Better to pass back updated catchups
 
 
 async def daily_reset():
@@ -207,6 +267,7 @@ async def startup():
     # asyncio.ensure_future(run_pending())
     # asyncio.get_running_loop().run_in_executor(None, pending())
     # Schedule a separate chron job on server
+
 
 if __name__ == '__main__':
     from argparse import ArgumentParser

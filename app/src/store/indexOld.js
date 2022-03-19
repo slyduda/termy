@@ -349,7 +349,7 @@ const store = createStore({
                 won: game.won
             }
 
-            axios.post('https://termy.gg/submit', payload)
+            axios.post(process.env.VUE_APP_API_URL + 'submit', payload)
                 .then((response) => {
                     state.submitted = true
                     

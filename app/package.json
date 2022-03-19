@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve --port 3000",
-    "build": "vue-cli-service build",
+    "build": "vue-cli-service build --no-clean",
+    "stage": "vue-cli-service build --no-clean --mode staging --dest staging && sh ./merge.sh",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {

@@ -122,8 +122,8 @@ const store = {
             game.length = context.state.length
 
             game.guesses = context.state.guesses
-            game.startedOn = context.state.time.started
-            game.endedOn = context.state.time.ended            
+            game.startedOn = new Date(context.state.time.started).getTime()
+            game.endedOn = new Date(context.state.time.ended).getTime()       
 
             game.won = context.state.won
 
@@ -183,6 +183,7 @@ const store = {
         end(context, payload) {
             context.commit('end', payload)
             context.dispatch('save')
+            context.dispatch('send')
         },
 
         send(context) {
@@ -195,14 +196,14 @@ const store = {
                 solution: state.solution,
                 session: state.storage.session,
                 guesses: state.guesses.join(','),
-                startedOn: state.time.started,
+                startedOn: new Date(state.time.started).getTime(),
                 endedOn: state.time.ended,
                 length: state.length,
                 mode: 'classic',
                 won: state.won
             }
             
-            axios.post('https://termy.gg/submit', payload)
+            axios.post(process.env.VUE_APP_API_URL + 'submit', payload)
                 .then((response) => {  
                     const data = {
                         id: response.data.id,
@@ -211,10 +212,10 @@ const store = {
                     }
 
                     context.dispatch('storage/addBackupInfo', { mode, id, payload: data })
-                    context.commit('sync', true)
+                    context.commit('synced', true)
                 })
                 .catch(() => {
-                    context.commit('sync', false)
+                    context.commit('synced', false)
                 })
         }
     },

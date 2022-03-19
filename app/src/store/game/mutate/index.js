@@ -176,7 +176,7 @@ const store = {
                 won: state.won
             }
             
-            axios.post('https://termy.gg/submit', payload)
+            axios.post(process.env.VUE_APP_API_URL + 'submit', payload)
                 .then((response) => {  
                     const data = {
                         id: response.data.id,
@@ -185,10 +185,10 @@ const store = {
                     }
 
                     context.dispatch('storage/addBackupInfo', { mode, id, payload: data })
-                    context.commit('sync', true)
+                    context.commit('synced', true)
                 })
                 .catch(() => {
-                    context.commit('sync', false)
+                    context.commit('synced', false)
                 })
         }
     },

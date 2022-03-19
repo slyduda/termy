@@ -13,7 +13,7 @@
     <div id="header" class="w-full py-2 max-w-7xl mx-auto border-b border-solid border-gray-300 dark:border-gray-700">
         <div class="w-full max-w-lg mx-auto">
           <div class="flex justify-between items-center mx-2">
-            <div class="flex">
+            <div class="flex flex-1">
                 <button @click="about = !about" class="p-2 flex justify-center items-center">
                   <font-awesome-icon icon="info-circle" class="text-2xl" :class="['text-gray-900 dark:text-gray-100']"></font-awesome-icon>
                 </button>
@@ -45,7 +45,7 @@
               <p class="hidden absolute text-xs -right-8 bottom-0 text-gray-400 dark:text-gray-600 font-bold">BETA</p>
             
             </div>
-            <div class="flex">
+            <div class="flex flex-1 justify-end">
                 <button class="p-2 flex justify-center items-center" @click="$store.dispatch('admin/score')">
                     <font-awesome-icon icon="chart-pie" class="text-2xl" :class="['text-gray-900 dark:text-gray-100']"></font-awesome-icon>
                 </button>
@@ -245,6 +245,7 @@ export default {
   },
   mounted: function () {
     this.$store.dispatch('init')
+  
 
     if (!localStorage.instructions) this.about = true
     localStorage.instructions = true
